@@ -19,13 +19,18 @@ export interface ISimpleCallback {
     (myArgument: any): void 
 }
 
+/*
+ * Listener :
+ * Interface for adding a listener to a DOM elements.
+ */
+
 export interface IListener {
     addEventListener(name: string, callback: ISimpleCallback): void
 }
 
 /*
- * Callback :
- * Interface for a simple method callback.
+ * Audio :
+ * Interface for the audio DOM elements.
  */
 
 export interface IAudio {

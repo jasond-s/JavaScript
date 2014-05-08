@@ -110,6 +110,9 @@ module.exports = function(grunt) {
 
         // Empties folders to start fresh
         clean: {
+            options: {
+                force: true
+            },
             dist: {
                 files: [{
                     dot: true,
@@ -317,7 +320,8 @@ module.exports = function(grunt) {
                         '*.html',
                         'views/{,*/}*.html',
                         'images/{,*/}*.{webp}',
-                        'fonts/*'
+                        'fonts/*',
+                        'data/**/*'
                     ]
                 }, {
                     expand: true,
@@ -415,23 +419,23 @@ module.exports = function(grunt) {
         'karma'
     ]);
 
-    // grunt.registerTask('build', [
-    //     'clean:dist',
-    //     'bowerInstall',
-    //     'useminPrepare',
-    //     'concurrent:dist',
-    //     'ts',
-    //     'autoprefixer',
-    //     'concat',
-    //     'ngmin',
-    //     'copy:dist',
-    //     'cdnify',
-    //     'cssmin',
-    //     'uglify',
-    //     'rev',
-    //     'usemin',
-    //     'htmlmin'
-    // ]);
+    grunt.registerTask('build', [
+        'clean:dist',
+        'bowerInstall',
+        'useminPrepare',
+        'concurrent:dist',
+        'ts',
+        'autoprefixer',
+        'concat',
+        'ngmin',
+        'copy:dist',
+        'cdnify',
+        'cssmin',
+        'uglify',
+        'rev',
+        'usemin',
+        'htmlmin'
+    ]);
 
     grunt.registerTask('default', [
         'ts',
