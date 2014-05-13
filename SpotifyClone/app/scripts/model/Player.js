@@ -1,6 +1,7 @@
 'use strict';
 
 
+
 var Player = (function () {
     function Player(player, source) {
         this.player = player;

@@ -46,3 +46,26 @@ app.service('trackCatalog', [
 
     }
 ]);
+
+// Creates a singleton that is used wherever it is injected.
+app.service('logger', [
+
+    function() {
+        var logger = Log4js.getLogger('Controllers');
+
+        //set the level of logging 
+        logger.setLevel(Log4js.Level.ALL);
+
+        var appender = new Log4js.BrowserConsoleAppender(),
+            layout = new Log4js.BasicLayout();
+
+        // Not needed for this perticular appender.
+        layout.LINE_SEP = '';
+        appender.setLayout(layout);
+
+        //set the Appender to write the log to 
+        logger.addAppender(appender);
+
+        return logger;
+    }
+]);
