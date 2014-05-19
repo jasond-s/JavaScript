@@ -27,12 +27,6 @@ Clock
 A clock using Kinetic JS... I posted a blog about it at http://jasonds.co.uk/blog/analog-clock-kinetic.
 
 
-Planets
-----------------
-
-A simple parallax experiment (only looks great on a pretty hi-res screen, sorry), it's not very refined. Will be scrubbing it up and posting to blog soon.
-
-
 SpotifyClone
 ----------------
 
