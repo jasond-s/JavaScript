@@ -1,7 +1,7 @@
 'use strict';
 
-app.controller('MainCtrl', ['$scope', 'audioComponents', 'trackCatalog', 'logger',
-    function($scope, audioComponents, trackCatalog, logger) {
+app.controller('MainCtrl', ['$scope', 'ahcHttp', 'audioComponents', 'trackCatalog', 'logger',
+    function($scope, ahcHttp, audioComponents, trackCatalog, logger) {
 
         // Var up all the stuff.
         var tracks = trackCatalog.search(),
@@ -21,7 +21,7 @@ app.controller('MainCtrl', ['$scope', 'audioComponents', 'trackCatalog', 'logger
         $scope.play = function(song) {
             player.play(song);
 
-            logger.info(JSON.stringify($scope.player));
+            logger.info('mainController', $scope.player);
         }
 
         $scope.pause = function() {
@@ -31,14 +31,16 @@ app.controller('MainCtrl', ['$scope', 'audioComponents', 'trackCatalog', 'logger
                 player.resume();
             }
 
-            logger.info(JSON.stringify($scope.player));
+            logger.info('mainController', $scope.player);
         }
 
         $scope.toggleFave = function(song) {
             song.persistFavoriteStatus(!song.isFavourite);
 
             song.save();
-            logger.info(JSON.stringify($scope.player));
+            logger.info('mainController', $scope.player);
+
+            ahcHttp.put('/song/' + song.name.replace(/\s/g, '-'), song);
         }
     }
 ]);

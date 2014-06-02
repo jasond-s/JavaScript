@@ -17,6 +17,7 @@ export declare class Player {
     private source;
     public isPlaying: boolean;
     public currentlyPlayingSong: Song;
+    public thing: string;
     constructor(player: IAudio, source: IAudioSource);
     public errorLoading(error: string): void;
     public play(song: Song): void;

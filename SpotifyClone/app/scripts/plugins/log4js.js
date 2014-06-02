@@ -1080,6 +1080,8 @@ Log4js.ConsoleAppender.prototype = Log4js.extend(new Log4js.Appender(), {
         }
 
         message = message || "undefined";
+
+        // TODO Add object literals to the message for logging.
         message = message.toString();
 
         this.outputElement.innerHTML += "<pre style='" + style + "'>" + message + "</pre>";
@@ -2196,11 +2198,17 @@ Log4js.JSONLayout.prototype = Log4js.extend(new Log4js.Layout(), {
             referer = "unknown";
         }
 
+        // Dirty hack? Need to make this an object.
+        var messageBody = loggingEvent.message;
+        if (messageBody.charAt(0) !== '{') {
+            messageBody = "\"" + messageBody + "\"";
+        }
+
         var jsonString = "{\n \"LoggingEvent\": {\n";
 
         jsonString += "\t\"logger\": \"" + loggingEvent.categoryName + "\",\n";
         jsonString += "\t\"level\": \"" + loggingEvent.level.toString() + "\",\n";
-        jsonString += "\t\"message\": \"" + loggingEvent.message + "\",\n";
+        jsonString += "\t\"message\":" + messageBody + ",\n";
         jsonString += "\t\"referer\": \"" + referer + "\",\n";
         jsonString += "\t\"useragent\": \"" + useragent + "\",\n";
         jsonString += "\t\"timestamp\": \"" + this.df.formatDate(loggingEvent.startTime, "yyyy-MM-ddThh:mm:ssZ") + "\",\n";
@@ -2215,7 +2223,7 @@ Log4js.JSONLayout.prototype = Log4js.extend(new Log4js.Layout(), {
      * @type String
      */
     getContentType: function() {
-        return "text/json";
+        return "application/json";
     },
     /** 
      * @return Returns the header for the layout format. The base class returns null.
@@ -2525,5 +2533,5 @@ Log4js.DateFormatter.prototype = {
  * @private
  */
 var log4jsLogger = Log4js.getLogger("Log4js");
-log4jsLogger.addAppender(new Log4js.ConsoleAppender());
+log4jsLogger.addAppender(new Log4js.DummyAppender());
 log4jsLogger.setLevel(Log4js.Level.ALL);

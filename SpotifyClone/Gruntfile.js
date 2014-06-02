@@ -27,17 +27,6 @@ module.exports = function(grunt) {
                 files: ['bower.json'],
                 tasks: ['bowerInstall']
             },
-            js: {
-                files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
-                tasks: ['newer:jshint:all'],
-                options: {
-                    livereload: true
-                }
-            },
-            jsTest: {
-                files: ['test/spec/{,*/}*.js'],
-                tasks: ['newer:jshint:test', 'karma']
-            },
             compass: {
                 files: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
                 tasks: ['compass:server', 'autoprefixer']
@@ -54,6 +43,10 @@ module.exports = function(grunt) {
                     '.tmp/styles/{,*/}*.css',
                     '<%= yeoman.app %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
                 ]
+            },
+            ts: {
+                files: ['<%= yeoman.app %>/scripts/{,*/}*.ts'],
+                tasks: ['ts', 'karma']
             }
         },
 
@@ -85,26 +78,26 @@ module.exports = function(grunt) {
             },
             dist: {
                 options: {
+                    port: 9002,
                     base: '<%= yeoman.dist %>'
                 }
             }
         },
 
-        // Make sure code styles are up to par and there are no obvious mistakes
-        jshint: {
+        express: {
             options: {
-                jshintrc: '.jshintrc',
-                reporter: require('jshint-stylish')
+                // Override defaults here
             },
-            all: [
-                'Gruntfile.js',
-                '<%= yeoman.app %>/scripts/{,*/}*.js'
-            ],
-            test: {
+            dev: {
                 options: {
-                    jshintrc: 'test/.jshintrc'
-                },
-                src: ['test/spec/{,*/}*.js']
+                    script: './server.js'
+                }
+            },
+            prod: {
+                options: {
+                    script: './server.js',
+                    node_env: 'production'
+                }
             }
         },
 
@@ -353,37 +346,35 @@ module.exports = function(grunt) {
             ]
         },
 
-        // By default, your `index.html`'s <!-- Usemin block --> will take care of
-        // minification. These next options are pre-configured if you do not wish
-        // to use the Usemin blocks.
+        // All the uglify and cssmin stuff.
         // cssmin: {
-        //   dist: {
-        //     files: {
-        //       '<%= yeoman.dist %>/styles/main.css': [
-        //         '.tmp/styles/{,*/}*.css',
-        //         '<%= yeoman.app %>/styles/{,*/}*.css'
-        //       ]
+        //     dist: {
+        //         files: {
+        //             '<%= yeoman.dist %>/styles/main.css': [
+        //                 '.tmp/styles/{,*/}*.css',
+        //                 '<%= yeoman.app %>/styles/{,*/}*.css'
+        //             ]
+        //         }
         //     }
-        //   }
         // },
         // uglify: {
-        //   dist: {
-        //     files: {
-        //       '<%= yeoman.dist %>/scripts/scripts.js': [
-        //         '<%= yeoman.dist %>/scripts/scripts.js'
-        //       ]
+        //     dist: {
+        //         files: {
+        //             '<%= yeoman.dist %>/scripts/scripts.js': [
+        //                 '<%= yeoman.dist %>/scripts/scripts.js'
+        //             ]
+        //         }
         //     }
-        //   }
         // },
         // concat: {
-        //   dist: {}
+        //     dist: {}
         // },
 
         // Test settings
         karma: {
             unit: {
                 configFile: 'karma.conf.js',
-                singleRun: true
+                singleRun: false
             }
         }
     });
@@ -399,15 +390,27 @@ module.exports = function(grunt) {
             return grunt.task.run(['build', 'connect:dist:keepalive']);
         }
 
-        grunt.task.run([
-            'clean:server',
-            'bowerInstall',
-            'concurrent:server',
-            'ts',
-            'autoprefixer',
-            'connect:livereload',
-            'watch'
-        ]);
+        if (target === 'express') {
+            grunt.task.run([
+                'clean:server',
+                'bowerInstall',
+                'concurrent:server',
+                'ts',
+                'autoprefixer',
+                'express:dev',
+                'watch'
+            ]);
+        } else {
+            grunt.task.run([
+                'clean:server',
+                'bowerInstall',
+                'concurrent:server',
+                'ts',
+                'autoprefixer',
+                'connect:livereload',
+                'watch'
+            ]);
+        }
     });
 
     grunt.registerTask('test', [
@@ -439,7 +442,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', [
         'ts',
-        'newer:jshint',
         'test',
         'build'
     ]);

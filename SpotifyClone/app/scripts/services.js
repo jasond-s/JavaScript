@@ -1,5 +1,10 @@
 'use strict';
 
+// --------------------------------------------- CONSTRUCTORS: FACTORIES -----
+
+//
+// --------------------------------------------- AUDIO COMPONENTS -----
+//
 // Creates a factory method so we can have one for each inject.
 app.factory('audioComponents', [
 
@@ -17,10 +22,14 @@ app.factory('audioComponents', [
             player: newPlayer
         };
     }
+
 ]);
 
+// --------------------------------------------- SINGLETONS: SERVICES -----
 
-// Creates a singleton that is used wherever it is injected.
+//
+// --------------------------------------------- TRACK CATALOG -----
+//
 app.service('trackCatalog', [
 
     function() {
@@ -43,29 +52,61 @@ app.service('trackCatalog', [
             // Do some form or search and return a new catalog.
             return catalog;
         }
-
     }
+
 ]);
 
-// Creates a singleton that is used wherever it is injected.
+//
+// --------------------------------------------- LOGGER -----
+//
 app.service('logger', [
 
     function() {
-        var logger = Log4js.getLogger('Controllers');
+        var logger = Log4js.getLogger('Controllers'),
+
+            // The appenders that the logging system will use.
+            browserAppender = new Log4js.BrowserConsoleAppender(),
+            ajaxAppender = new Log4js.AjaxAppender("./log/"),
+
+            // Layout for the appenders.
+            basicLayout = new Log4js.BasicLayout(),
+            jsonLayout = new Log4js.JSONLayout();
+
 
         //set the level of logging 
         logger.setLevel(Log4js.Level.ALL);
 
-        var appender = new Log4js.BrowserConsoleAppender(),
-            layout = new Log4js.BasicLayout();
+        // Annoying and not necessary newline in browser.
+        basicLayout.LINE_SEP = '';
 
-        // Not needed for this perticular appender.
-        layout.LINE_SEP = '';
-        appender.setLayout(layout);
+        browserAppender.setLayout(basicLayout);
+        ajaxAppender.setLayout(jsonLayout);
 
-        //set the Appender to write the log to 
-        logger.addAppender(appender);
+        // Buffer before log send.
+        ajaxAppender.setThreshold(10);
 
-        return logger;
+        // Add the new appenders the logger will be using.
+        logger.addAppender(browserAppender);
+        logger.addAppender(ajaxAppender);
+
+
+        // If you want to send an object as a string.
+        var sanitise = function(str) {
+            return JSON.stringify(str).replace(/[{}\"]/g, ' ')
+        }
+
+        // At the moment only info is implemented.
+        return {
+            infoString: function(str) {
+                logger.info(sanitise(str));
+            },
+            info: function(source, state) {
+                logger.info(JSON.stringify({
+                    source: source,
+                    state: state
+                }));
+            }
+        };
     }
+
 ]);

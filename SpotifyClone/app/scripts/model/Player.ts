@@ -1,42 +1,41 @@
 'use strict';
 
-// EXPLICIT COMPILE COMAND
+//
+// EXPLICIT COMPILE COMMAND
+//
 // tsc -target ES5 .\Player.ts --module 'commonjs'.
-
-/*
- * External Interfaces :
- * Includes all our interfaces for the external stuff that is being brought in (could be .d.ts) 
- *
- * -----------------------------------------------------------------------------------------------
- */
+//
 
 /*
  * Callback :
  * Interface for a simple method callback.
+ *
+ * -----------------------------------------------------------------------------------------------
  */
-
 export interface ISimpleCallback { 
-    (myArgument: any): void 
+    (myArgument: any): void;
 }
 
 /*
  * Listener :
  * Interface for adding a listener to a DOM elements.
+ *
+ * -----------------------------------------------------------------------------------------------
  */
-
 export interface IListener {
-    addEventListener(name: string, callback: ISimpleCallback): void
+    addEventListener(name: string, callback: ISimpleCallback): void;
 }
 
 /*
  * Audio :
  * Interface for the audio DOM elements.
+ *
+ * -----------------------------------------------------------------------------------------------
  */
-
 export interface IAudio {
     play(): void;
     pause(): void;
-    load(): void
+    load(): void;
 }
 
 export interface IAudioSource extends IListener {
@@ -53,7 +52,7 @@ export class Player {
     // FIELDS
     public isPlaying: boolean;
     public currentlyPlayingSong: Song;
-
+    public thing: string;
     // CONSTRUCTOR
     constructor(private player: IAudio, private source: IAudioSource) {
         this.isPlaying = false;
@@ -71,8 +70,8 @@ export class Player {
     }
 
     play(song: Song): void {
-        this.currentlyPlayingSong = song;
         this.isPlaying = true;
+        this.currentlyPlayingSong = song;
 
         // If the player had a DOM player element then use it.
         if (this.player) {
@@ -113,7 +112,6 @@ export class Player {
  *
  * -----------------------------------------------------------------------------------------------
  */
-
 export class Song {
     // FIELDS
     public isFavourite: boolean;
