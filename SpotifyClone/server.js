@@ -1,106 +1,118 @@
 //
-// --------------------------------------------- REQUIRES ---------
+// --------------------------------------------- CLUSTER ---------
 //
-var express = require('express'),
-    bodyParser = require('body-parser'),
-    colors = require('colors'),
-    path = require('path'),
-    model = require('./app/scripts/model/Player');
+var cluster = require('cluster');
 
-var Song = model.Song;
-var Player = model.Player;
+if ( cluster.isMaster ) {
+    for ( var i=0; i<4; ++i ){
+        cluster.fork();
+    }
+} else {
 
-//
-// --------------------------------------------- SETUP APP --------
-//
-var app = express();
+    //
+    // --------------------------------------------- REQUIRES ---------
+    //  
+    var express = require('express'),
+        bodyParser = require('body-parser'),
+        colors = require('colors'),
+        path = require('path'),
+        model = require('./app/scripts/model/Player');
 
-app.use(bodyParser());
+    var Song = model.Song;
+    var Player = model.Player;
 
-app.use(express.static(path.join(__dirname, '/app')));
-app.set('views', path.join(__dirname, '/app/views'));
+    //
+    // --------------------------------------------- SETUP APP --------
+    //
+    var app = express();
 
-//
-// --------------------------------------------- ROUTES -----------
-//
+    app.use(bodyParser());
 
-//
-// --------------------------------------------- INFRA -----------
-//
-app.get("/", function(req, res) {
-    res.sendfile(path.join(__dirname, '/app/index.html'));
-});
+    app.use(express.static(path.join(__dirname, '/app')));
+    app.set('views', path.join(__dirname, '/app/views'));
 
-app.post("/log/", function(req, res) {
-    var messages = req.body.Log4js;
+    //
+    // --------------------------------------------- ROUTES -----------
+    //
 
-    for (var i = messages.length - 1; i >= 0; i--) {
-        var logEvent = messages[i].LoggingEvent;
+    //
+    // --------------------------------------------- INFRA -----------
+    //
+    app.get("/", function(req, res) {
+        res.sendfile(path.join(__dirname, '/app/index.html'));
+    });
 
-        if (typeof logEvent.message == 'string' || logEvent.message instanceof String) {
-            console.log('System Message: \n'.red + JSON.stringify(logEvent).cyan + "\n");
-        } else {
-            console.log('Client Message: \n'.red + JSON.stringify(logEvent).green + "\n");
-        }
+    app.post("/log/", function(req, res) {
+        var messages = req.body.Log4js;
+
+        for (var i = messages.length - 1; i >= 0; i--) {
+            var logEvent = messages[i].LoggingEvent;
+
+            if (typeof logEvent.message == 'string' || logEvent.message instanceof String) {
+                console.log('System Message: \n'.red + JSON.stringify(logEvent).cyan + "\n");
+            } else {
+                console.log('Client Message: \n'.red + JSON.stringify(logEvent).green + "\n");
+            }
+        };
+
+        res.send("OK");
+    });
+
+    //
+    // --------------------------------------------- SONGS -----------
+    //
+    var searchSongs = function(req, res, search) {
+        var catalog = [
+            new Song('Hit Me Baby One More Time', 'Brittany Spears'),
+            new Song('Tik Tok', 'Kei$ha'),
+            new Song('Theme Music', 'Rayman 2'),
+            new Song('Fouteen Autumns and Fifteen Winters', 'The Twilight Sad'),
+            new Song('Still Life', 'The Horrors'),
+            new Song('Milk & Black Spiders', 'Foals'),
+            new Song('All I Wanted Was Some Danger', 'The Milk'),
+            new Song('Pyramid Song', 'Radiohead'),
+        ];
+
+        res.json(catalog);
     };
 
-    res.send("OK");
-});
+    app.get("/song", function(req, res) {
+        console.log("Get All Songs Catalog:");
 
-//
-// --------------------------------------------- SONGS -----------
-//
-var searchSongs = function(req, res, search) {
-    var catalog = [
-        new Song('Hit Me Baby One More Time', 'Brittany Spears'),
-        new Song('Tik Tok', 'Kei$ha'),
-        new Song('Theme Music', 'Rayman 2'),
-        new Song('Fouteen Autumns and Fifteen Winters', 'The Twilight Sad'),
-        new Song('Still Life', 'The Horrors'),
-        new Song('Milk & Black Spiders', 'Foals'),
-        new Song('All I Wanted Was Some Danger', 'The Milk'),
-        new Song('Pyramid Song', 'Radiohead'),
-    ];
+        searchSongs(req, res);
+    });
 
-    res.json(catalog);
-};
+    app.get("/song/:search", function(req, res) {
+        var search = req.params.search;
 
-app.get("/song", function(req, res) {
-    console.log("Get All Songs Catalog:");
+        console.log("Get Song Catalog: " + search);
 
-    searchSongs(req, res);
-});
+        searchSongs(req, res, search);
+    });
 
-app.get("/song/:search", function(req, res) {
-    var search = req.params.search;
+    app.put("/song/:id", function(req, res) {
+        var identifier = req.params.id;
 
-    console.log("Get Song Catalog: " + search);
+        console.log("Update Song - Identifier: " + identifier);
+        console.log(JSON.stringify(req.body));
 
-    searchSongs(req, res, search);
-});
+        res.send("OK");
+    });
 
-app.put("/song/:id", function(req, res) {
-    var identifier = req.params.id;
+    app.post("/song/:id", function(req, res) {
+        var identifier = req.params.id;
 
-    console.log("Update Song - Identifier: " + identifier);
-    console.log(JSON.stringify(req.body));
+        console.log("Add New Song - Identifier: " + identifier);
+        console.log(JSON.stringify(req.body));
 
-    res.send("OK");
-});
+        res.send("OK");
+    });
 
-app.post("/song/:id", function(req, res) {
-    var identifier = req.params.id;
-
-    console.log("Add New Song - Identifier: " + identifier);
-    console.log(JSON.stringify(req.body));
-
-    res.send("OK");
-});
-
-//
-// --------------------------------------------- START SERVER -----
-//
-app.listen(9000, 'ws-jasonds', function() {
-    console.log('Play-A-Tron 3000 listening at 9000'.rainbow);
-    console.log(' ');
-});
+    //
+    // --------------------------------------------- START SERVER -----
+    //
+    app.listen(9000, 'localhost', function() {
+        console.log('Play-A-Tron 3000 listening at 9000'.rainbow);
+        console.log(' ');
+    });
+}

@@ -2,6 +2,11 @@
 logs
 *.log
 
+# Any and all temp folders
+.tmp
+.sass-cache
+.tscache
+
 # Runtime data
 pids
 *.pid

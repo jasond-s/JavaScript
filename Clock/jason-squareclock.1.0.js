@@ -26,7 +26,7 @@
 
   // Animator.
   this.tween = function(i, n, d){
-    return new Kinetic.Tween({node: n, duration: d, points: cp[i]})
+    return new Kinetic.Tween({node: n, duration: d, points: cp[i]});
   };
 
   // Get on with all the clock code!

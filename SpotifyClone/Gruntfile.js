@@ -54,7 +54,7 @@ module.exports = function(grunt) {
         connect: {
             options: {
                 port: 9000,
-                hostname: 'ws-jasonds',
+                hostname: 'localhost',
                 livereload: 35729
             },
             livereload: {
