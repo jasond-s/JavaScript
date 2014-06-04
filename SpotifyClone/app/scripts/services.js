@@ -5,7 +5,6 @@
 //
 // --------------------------------------------- AUDIO COMPONENTS -----
 //
-// Creates a factory method so we can have one for each inject.
 app.factory('audioComponents', [
 
     function() {
@@ -22,38 +21,41 @@ app.factory('audioComponents', [
             player: newPlayer
         };
     }
-
 ]);
+
 
 // --------------------------------------------- SINGLETONS: SERVICES -----
 
 //
 // --------------------------------------------- TRACK CATALOG -----
 //
-app.service('trackCatalog', [
+app.service('trackCatalog', ['nsHttp',
+    function(nsHttp) {
+        var convertDtos = function(data) {
+            var results = [];
+            for (var i = data.length - 1; i >= 0; i--) {
+                var data = data[i];
+                results.push(new Song(data.name, data.artist));
+            }
+            return results;
+        }
 
-    function() {
-        // Capture scope.
-        var that = this;
-
-        // Create the catalog... this would probably be a remote call with parameters.
-        var catalog = [
-            new Song('Hit Me Baby One More Time', 'Brittany Spears'),
-            new Song('Tik Tok', 'Kei$ha'),
-            new Song('Theme Music', 'Rayman 2'),
-            new Song('Fouteen Autumns and Fifteen Winters', 'The Twilight Sad'),
-            new Song('Still Life', 'The Horrors'),
-            new Song('Milk & Black Spiders', 'Foals'),
-            new Song('All I Wanted Was Some Danger', 'The Milk'),
-            new Song('Pyramid Song', 'Radiohead'),
-        ];
-
-        this.search = function(searchTerm) {
+        // Retrieve catalog from the server.
+        this.getAll = function(callback) {
             // Do some form or search and return a new catalog.
-            return catalog;
+            var promise = nsHttp.get('/song').then(function(result) {
+                console.log(JSON.stringify(result.data));
+                callback(convertDtos(result.data));
+            });
+        }
+        this.search = function(searchTerm, callback) {
+            // Do some form or search and return a new catalog.
+            var promise = nsHttp.get('/song?' + 'search=' + searchTerm).then(function(result) {
+                console.log(JSON.stringify(result.data));
+                callback(convertDtos(result.data));
+            });
         }
     }
-
 ]);
 
 //
@@ -108,5 +110,4 @@ app.service('logger', [
             }
         };
     }
-
 ]);

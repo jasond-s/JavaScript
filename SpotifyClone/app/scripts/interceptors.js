@@ -1,11 +1,11 @@
 //
 // --------------------------------------------- HTTP SERVICE REPLACEMENT -----
 //
-app.service('ahcHttp', ['$http',
+app.factory('nsHttp', ['$http',
     function($http) {
 
         var addDomainHeaders = function(method, config) {
-            conf = {};
+            var conf = {};
 
             if (config) conf = config;
             else conf.headers = {};
@@ -16,17 +16,20 @@ app.service('ahcHttp', ['$http',
         };
 
         return {
+
             post: function(url, data, config, method) {
-                $http.post(url, data, addDomainHeaders(method, config));
+                return $http.post(url, data, addDomainHeaders(method, config));
             },
             put: function(url, data, config, method) {
-                $http.put(url, data, addDomainHeaders(method, config));
-            },
-            get: function(url, config, method) {
-                $http.get(url, addDomainHeaders(method, config));
+                return $http.put(url, data, addDomainHeaders(method, config));
             },
             delete: function(url, config, method) {
-                $http.delete(url, addDomainHeaders(method, config));
+                return $http.delete(url, addDomainHeaders(method, config));
+            },
+
+            // Returns a promise.
+            get: function(url, config, method) {
+                return $http.get(url, addDomainHeaders(method, config));
             }
         }
     }

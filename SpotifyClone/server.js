@@ -4,7 +4,11 @@
 var express = require('express'),
     bodyParser = require('body-parser'),
     colors = require('colors'),
-    path = require('path');
+    path = require('path'),
+    model = require('./app/scripts/model/Player');
+
+var Song = model.Song;
+var Player = model.Player;
 
 //
 // --------------------------------------------- SETUP APP --------
@@ -18,6 +22,10 @@ app.set('views', path.join(__dirname, '/app/views'));
 
 //
 // --------------------------------------------- ROUTES -----------
+//
+
+//
+// --------------------------------------------- INFRA -----------
 //
 app.get("/", function(req, res) {
     res.sendfile(path.join(__dirname, '/app/index.html'));
@@ -37,6 +45,38 @@ app.post("/log/", function(req, res) {
     };
 
     res.send("OK");
+});
+
+//
+// --------------------------------------------- SONGS -----------
+//
+var searchSongs = function(req, res, search) {
+    var catalog = [
+        new Song('Hit Me Baby One More Time', 'Brittany Spears'),
+        new Song('Tik Tok', 'Kei$ha'),
+        new Song('Theme Music', 'Rayman 2'),
+        new Song('Fouteen Autumns and Fifteen Winters', 'The Twilight Sad'),
+        new Song('Still Life', 'The Horrors'),
+        new Song('Milk & Black Spiders', 'Foals'),
+        new Song('All I Wanted Was Some Danger', 'The Milk'),
+        new Song('Pyramid Song', 'Radiohead'),
+    ];
+
+    res.json(catalog);
+};
+
+app.get("/song", function(req, res) {
+    console.log("Get All Songs Catalog:");
+
+    searchSongs(req, res);
+});
+
+app.get("/song/:search", function(req, res) {
+    var search = req.params.search;
+
+    console.log("Get Song Catalog: " + search);
+
+    searchSongs(req, res, search);
 });
 
 app.put("/song/:id", function(req, res) {

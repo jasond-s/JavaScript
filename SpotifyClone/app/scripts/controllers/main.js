@@ -1,20 +1,19 @@
 'use strict';
 
-app.controller('MainCtrl', ['$scope', 'ahcHttp', 'audioComponents', 'trackCatalog', 'logger',
-    function($scope, ahcHttp, audioComponents, trackCatalog, logger) {
+app.controller('MainCtrl', ['$scope', 'nsHttp', 'audioComponents', 'trackCatalog', 'logger',
+    function($scope, nsHttp, audioComponents, trackCatalog, logger) {
 
         // Var up all the stuff.
-        var tracks = trackCatalog.search(),
-            player = audioComponents.player,
+        var player = audioComponents.player,
             startSong = new Song('None', 'None');
-
 
         // Do all the view model type logic 
         player.play(startSong);
 
-
         // Scope up all the scope stuff.
-        $scope.tracks = tracks;
+        trackCatalog.getAll(function(tracks) {
+            $scope.tracks = tracks;
+        });
 
         $scope.player = audioComponents.player;
 
@@ -40,7 +39,7 @@ app.controller('MainCtrl', ['$scope', 'ahcHttp', 'audioComponents', 'trackCatalo
             song.save();
             logger.info('mainController', $scope.player);
 
-            ahcHttp.put('/song/' + song.name.replace(/\s/g, '-'), song);
+            nsHttp.put('/song/' + song.name.replace(/\s/g, '-'), song);
         }
     }
 ]);
