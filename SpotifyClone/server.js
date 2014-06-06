@@ -68,6 +68,8 @@ if ( cluster.isMaster ) {
             new Song('Theme Music', 'Rayman 2'),
             new Song('Fouteen Autumns and Fifteen Winters', 'The Twilight Sad'),
             new Song('Still Life', 'The Horrors'),
+            new Song('The Entertainer', 'Scott Joplin'),
+            new Song('Spring from Four Seasons', 'Vivaldi'),
             new Song('Milk & Black Spiders', 'Foals'),
             new Song('All I Wanted Was Some Danger', 'The Milk'),
             new Song('Pyramid Song', 'Radiohead'),
