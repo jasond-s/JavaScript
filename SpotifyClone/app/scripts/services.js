@@ -34,8 +34,8 @@ app.service('trackCatalog', ['nsHttp',
         var convertDtos = function(data) {
             var results = [];
             for (var i = data.length - 1; i >= 0; i--) {
-                var data = data[i];
-                results.push(new Song(data.name, data.artist));
+                var d = data[i];
+                results.push(new Song(d.name, d.artist));
             }
             return results;
         }
