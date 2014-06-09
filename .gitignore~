@@ -2,9 +2,6 @@
 logs
 *.log
 
-# Any and all of the vim temp files
-*~ 
-
 # Any and all temp folders
 .tmp
 .sass-cache
