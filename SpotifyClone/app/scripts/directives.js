@@ -11,6 +11,8 @@ app.directive('trackItem', function() {
         '<span ng-switch-when="true" ng-click="play()" class="glyphicon glyphicon-pause btn btn-xs pull-right"></span>' +
         '</span></div>';
 
+    var toast = document.querySelector('#toast');
+
     return {
         restrict: "E",
         rep1ace: true,
@@ -24,11 +26,12 @@ app.directive('trackItem', function() {
         controller: function($scope, $element, $attrs, $location) {
             $scope.fave = function() {
                 console.log('favourite: From directive');
-                $scope.favouriteaction()
+                $scope.favouriteaction();
             }
             $scope.play = function() {
                 console.log('play: From directive');
-                $scope.playaction()
+                toast.show();
+                $scope.playaction();
             }
         }
     };
