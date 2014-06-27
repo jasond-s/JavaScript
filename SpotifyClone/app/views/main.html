@@ -21,6 +21,10 @@
     </li>
   </ul>
 
-  <paper-toast id="toast">You are now listening to: {{player.currentlyPlayingSong.name}}</paper-toast>
+  <paper-toast id="toast">
+    <i id="toastText">You are now listening to: <b>{{ player.currentlyPlayingSong.name }}</b></i>
+    <paper-button raisedButton style="display: inline-block; vertical-align: middle; color: #8fbc8f; background: #D9EDF7; font-family: 'astrodramatic'; font-weight: bold; font-size: 140%; margin: 5px;"><b>BUY NOW</b></paper-button>
+    <sc-album-art url="images/thingifyclone.png" artist="{{ player.currentlyPlayingSong.artist }}"/>
+  </paper-toast>
 
 </div>

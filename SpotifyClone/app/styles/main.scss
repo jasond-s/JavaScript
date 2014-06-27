@@ -68,6 +68,27 @@ body {
     cursor: pointer;
 }
 
+#toastText {
+    display: inline-block; 
+    margin-left: -20px; 
+    margin-right: 20px; 
+    vertical-align: middle; 
+    text-transform: lowerCase;
+}
+
+#toast{
+    background: #4285f4;
+    color: #fff;
+}
+
+#toast:hover {
+    background: #2a56c6;
+}
+
+#toast::shadow #ripple {
+    color: #2a56c6;
+}
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
     .container {

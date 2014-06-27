@@ -30,7 +30,9 @@ app.directive('trackItem', function() {
             }
             $scope.play = function() {
                 console.log('play: From directive');
-                toast.show();
+                if (toast && toast.show) {
+                    toast.show();
+                }
                 $scope.playaction();
             }
         }

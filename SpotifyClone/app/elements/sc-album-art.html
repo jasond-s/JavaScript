@@ -1,0 +1,27 @@
+<polymer-element name="sc-album-art" attributes="url artist">
+	<template>
+		<style type="text/css">
+			:host {
+				vertical-align: middle;
+				display: inline-block;
+			}
+			img {
+				width: 50px;
+				height: 50px;
+			}
+		</style>
+		<img src="{{ url }}"/>
+		<core-ajax auto url="{{ query }}" handleAs="json" on-core-response="{{ handleResponse }}"/>
+	</template>
+	<script>
+		Polymer('sc-album-art', {
+			ready: function() {
+				this.query = "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + this.artist + "&api_key=b2e450e99e92391fc9bc8d3db1d1c6c2&format=json";
+				console.log("Current Toast Query: " + this.query);
+    		},
+			handleResponse: function(response) {
+				console.log("Ajax Response: " + JSON.stringify(response));
+			}
+		});
+	</script>
+</polymer-element>
