@@ -1,11 +1,27 @@
 'use strict';
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 
 
 
-var Player = (function () {
-    function Player(player, source) {
+var AudioHolder = (function () {
+    function AudioHolder(player, source) {
         this.player = player;
         this.source = source;
+    }
+    return AudioHolder;
+})();
+exports.AudioHolder = AudioHolder;
+
+var Player = (function (_super) {
+    __extends(Player, _super);
+    function Player(player, source) {
+        _super.call(this, player, source);
+
         this.isPlaying = false;
         this.currentlyPlayingSong = null;
 
@@ -52,7 +68,7 @@ var Player = (function () {
         this.currentlyPlayingSong.persistFavoriteStatus(!this.currentlyPlayingSong.isFavourite);
     };
     return Player;
-})();
+})(AudioHolder);
 exports.Player = Player;
 
 var Song = (function () {

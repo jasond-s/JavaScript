@@ -42,19 +42,28 @@ export interface IAudioSource extends IListener {
     src: string;
 }
 
+export class AudioHolder {
+    constructor(public player: IAudio, public source: IAudioSource) {
+
+    }
+}
+
 /*
  * Player :
  * The player has a lot of mutable state.
  *
  * -----------------------------------------------------------------------------------------------
  */
-export class Player {
+export class Player extends AudioHolder {
     // FIELDS
     public isPlaying: boolean;
     public currentlyPlayingSong: Song;
     public thing: string;
+
     // CONSTRUCTOR
-    constructor(private player: IAudio, private source: IAudioSource) {
+    constructor(player: IAudio, source: IAudioSource) {
+        super(player, source);
+
         this.isPlaying = false;
         this.currentlyPlayingSong = null;
 

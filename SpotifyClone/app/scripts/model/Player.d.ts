@@ -12,9 +12,12 @@ export interface IAudio {
 export interface IAudioSource extends IListener {
     src: string;
 }
-export declare class Player {
-    private player;
-    private source;
+export declare class AudioHolder {
+    public player: IAudio;
+    public source: IAudioSource;
+    constructor(player: IAudio, source: IAudioSource);
+}
+export declare class Player extends AudioHolder {
     public isPlaying: boolean;
     public currentlyPlayingSong: Song;
     public thing: string;
