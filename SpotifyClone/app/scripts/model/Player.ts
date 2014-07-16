@@ -44,7 +44,6 @@ export interface IAudioSource extends IListener {
 
 export class AudioHolder {
     constructor(public player: IAudio, public source: IAudioSource) {
-
     }
 }
 

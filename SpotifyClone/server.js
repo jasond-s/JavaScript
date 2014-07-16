@@ -3,8 +3,8 @@
 //
 var cluster = require('cluster');
 
-if ( cluster.isMaster ) {
-    for ( var i=0; i<4; ++i ){
+if (cluster.isMaster) {
+    for (var i = 0; i < 4; ++i) {
         cluster.fork();
     }
 } else {
@@ -26,7 +26,10 @@ if ( cluster.isMaster ) {
     //
     var app = express();
 
-    app.use(bodyParser());
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+    app.use(bodyParser.json());
 
     app.use(express.static(path.join(__dirname, '/app')));
     app.set('views', path.join(__dirname, '/app/views'));
@@ -113,7 +116,7 @@ if ( cluster.isMaster ) {
     //
     // --------------------------------------------- START SERVER -----
     //
-    app.listen(9000, 'localhost', function() {
+    app.listen(9000, 'ws-jasonds', function() {
         console.log('Play-A-Tron 3000 listening at 9000'.rainbow);
         console.log(' ');
     });

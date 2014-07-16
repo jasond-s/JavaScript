@@ -1,0 +1,1 @@
+"C:\Users\dryhurst-smithj.ADASTRA\Documents\GitHub\JavaScript\SpotifyClone\app\scripts\model\Player.d.ts" "C:\Users\dryhurst-smithj.ADASTRA\Documents\GitHub\JavaScript\SpotifyClone\app\scripts\model\Player.ts" --sourcemap --declaration --removeComments --target ES5 --module commonjs

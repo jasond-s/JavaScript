@@ -346,30 +346,6 @@ module.exports = function(grunt) {
             ]
         },
 
-        // All the uglify and cssmin stuff.
-        // cssmin: {
-        //     dist: {
-        //         files: {
-        //             '<%= yeoman.dist %>/styles/main.css': [
-        //                 '.tmp/styles/{,*/}*.css',
-        //                 '<%= yeoman.app %>/styles/{,*/}*.css'
-        //             ]
-        //         }
-        //     }
-        // },
-        // uglify: {
-        //     dist: {
-        //         files: {
-        //             '<%= yeoman.dist %>/scripts/scripts.js': [
-        //                 '<%= yeoman.dist %>/scripts/scripts.js'
-        //             ]
-        //         }
-        //     }
-        // },
-        // concat: {
-        //     dist: {}
-        // },
-
         // Test settings
         karma: {
             unit: {
