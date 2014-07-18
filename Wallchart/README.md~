@@ -1,4 +1,4 @@
-# Scheduleing Control (HTML5 Canvas)
+# AHC Wallchart Control (HTML5 Canvas)
 
 
 **library-wallchart**
@@ -32,9 +32,9 @@ All javascript dependancies.
 
 You will need to import 3 scripts for the use of this control. 
 
-1. wc.{version}.js - *A utilities library for all AHC frontends.*
-2. wc.model.{version}.js - *A simple scheduling domain model.*
-3. wc.wallchart.{version}.js - *The wallchart control control library.*
+1. ahc.{version}.js - *A utilities library for all AHC frontends.*
+2. ahc.model.{version}.js - *A simple scheduling domain model.*
+3. ahc.wallchart.{version}.js - *The wallchart control control library.*
 
 
 ## Tests
