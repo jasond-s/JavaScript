@@ -1,0 +1,117 @@
+
+/*
+ * Raw Tag Styles
+ */
+
+body {
+	margin: 0px;
+	padding: 0px;
+	height: 90%;
+}
+
+html {
+	height: 100%;
+}
+
+h1 {
+	font-size: 1.6em;
+	font-family: Helvetica;
+	color: whitesmoke;
+	text-shadow: -3px 4px #12476E;
+}
+
+h2 {
+	font-size: 1em;
+	font-family: Helvetica;
+	color: whitesmoke;
+	text-shadow: -3px 4px #12476E;
+}
+
+a {
+	outline: 0;
+	text-decoration: none;
+	color: darkgrey;
+	background: none;
+	font-size: 1.1em;
+	display: block;
+	margin: 5px;
+	transition: ease 0.6s;
+}
+	a:hover {
+		box-shadow: rgba(128,128,128,0.8) 5px 7px 20px;
+	}
+
+/*
+ * Utilities
+ */
+ 
+#wallchart {
+	background: #fff;
+	border: solid 1px #12476E;
+}
+
+.float-right{
+	float: right;
+}
+
+.float-left{
+	float: left;
+}
+
+.content-wrapper {
+    margin: 0 auto;
+    max-width: 900px;
+    padding-top: 20px;
+    width: 100%;
+    text-align: left;
+}
+
+.link-wrapper {
+	padding: 5px;
+}
+
+.controls h2 {
+	vertical-align: middle;
+	display: inline-block;
+}
+
+.controls input {
+	vertical-align: middle;
+	display: inline-block;
+}
+/*
+ * Main Content
+ */
+
+.header {
+	background: #0064ab;
+	text-align: left;
+    margin: 0 auto;
+    padding-bottom: 10px;
+	height: 17%;
+}
+
+.body {
+	background: white;
+	text-align: center;
+    padding-bottom: 30px;
+	height: 73%;
+	overflow: auto;
+}
+
+.footer {
+	background: #0064ab;
+	text-align: center;
+    margin: 0 auto;
+    height: 14%
+}
+
+.footer-logo {
+	margin-left: 20px; 
+}
+
+.copyright {
+	color: whitesmoke;
+	text-align: right;
+	margin-right: 30px;
+}

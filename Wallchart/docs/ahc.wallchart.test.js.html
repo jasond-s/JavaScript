@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Tests/ahc.wallchart.test.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Tests/ahc.wallchart.test.js</h1>
+
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+//
+//
+/** @module test/ahc/wallchart */
+//
+//
+
+console.log('module test/ahc/wallchart: ' + new Date());
+
+describe('ahc.Wallchart', function() {
+    var test = this,
+        wallchart = {},
+        today;
+
+    beforeEach(function() {
+        var now = new Date();
+        today = new Date(1990, 1, 1, 0, 0, 0, 0);
+        wallchart = new ahc.Wallchart('wallchart', {
+            start: today
+        });
+    });
+
+    describe('during initialisation', function() {
+        it('should deal with start', function() {
+            expect(wallchart.startTime).toBe(today);
+        });
+
+        it('should create new canvas', function() {
+            expect(wallchart.canvas instanceof fabric.Canvas).toBeTruthy();
+        });
+
+        describe('time marks need to be created', function() {
+            it('as the date for all midnight times', function() {
+                wallchart.changeZoom(50);
+                expect(wallchart.timeMarks[0].getText()).toBe('01/01');
+            });
+
+            it('at 5 minutes if zoom is 480.', function() {
+                wallchart.changeZoom(480);
+                expect(wallchart.timeMarks[1].getText()).toBe('00:05');
+            });
+
+            it('at 10 minutes if zoom is 240.', function() {
+                wallchart.changeZoom(240);
+                expect(wallchart.timeMarks[1].getText()).toBe('00:10');
+            });
+
+            it('at 15 minutes if zoom is 160.', function() {
+                wallchart.changeZoom(160);
+                expect(wallchart.timeMarks[1].getText()).toBe('00:15');
+            });
+
+            it('at 30 minutes if zoom is 80.', function() {
+                wallchart.changeZoom(80);
+                expect(wallchart.timeMarks[1].getText()).toBe('00:30');
+            });
+
+            it('at hours if zoom is 50.', function() {
+                wallchart.changeZoom(50);
+                expect(wallchart.timeMarks[1].getText()).toBe('01:00');
+            });
+
+            it('at 2 hours if zoom is 39.', function() {
+                wallchart.changeZoom(39);
+                expect(wallchart.timeMarks[1].getText()).toBe('02:00');
+            });
+
+            it('at 3 hours if zoom is 19.', function() {
+                wallchart.changeZoom(19);
+                expect(wallchart.timeMarks[1].getText()).toBe('03:00');
+            });
+
+            it('at 6 hours if zoom is 13.', function() {
+                wallchart.changeZoom(13);
+                expect(wallchart.timeMarks[1].getText()).toBe('06:00');
+            });
+
+            it('at 12 hours if zoom is 6.', function() {
+                wallchart.changeZoom(6);
+                expect(wallchart.timeMarks[1].getText()).toBe('12:00');
+            });
+
+            it('at 1 day if zoom is 3.', function() {
+                wallchart.changeZoom(3);
+                expect(wallchart.timeMarks[1].getText()).toBe('02/01');
+            });
+        });
+    });
+});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-ahc.html">ahc</a></li><li><a href="exceptions.html">ahc/exceptions</a></li><li><a href="model.html">ahc/model</a></li><li><a href="wallchart.html">ahc/wallchart</a></li><li><a href="ahc.html">test/ahc</a></li><li><a href="model_.html">test/ahc/model</a></li><li><a href="wallchart_.html">test/ahc/wallchart</a></li></ul><h3>Classes</h3><ul><li><a href="exceptions-AhcException.html">AhcException</a></li><li><a href="exceptions-ApplicationException.html">ApplicationException</a></li><li><a href="exceptions-ArgumentException.html">ArgumentException</a></li><li><a href="model-Booking.html">Booking</a></li><li><a href="model-Eventbase.html">Eventbase</a></li><li><a href="model-Resource.html">Resource</a></li><li><a href="wallchart-Wallchart.html">Wallchart</a></li><li><a href="wallchart-WcEvent.html">WcEvent</a></li><li><a href="wallchart-WcObject.html">WcObject</a></li><li><a href="wallchart-WcResource.html">WcResource</a></li><li><a href="module-ahc-Hand.html">Hand</a></li><li><a href="module-ahc-Observable.html">Observable</a></li><li><a href="module-ahc-ObservableArray.html">ObservableArray</a></li><li><a href="module-ahc-ObservableVal.html">ObservableVal</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Thu Jul 17 2014 11:16:25 GMT+0100 (GMT Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

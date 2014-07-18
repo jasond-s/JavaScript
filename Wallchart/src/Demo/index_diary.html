@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta http-equiv="x-ua-compatible" content="IE=edge">
+	    <meta charset="utf-8"/>
+	    <title>DIARY WALL CHART PROTO</title>
+	    <meta name="viewport" content="width=device-width"/>
+	    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+	    <link rel="stylesheet" type="text/css" href="Styles/wallchart.1.0.css"/>
+	    <script type="text/javascript" src="fabric_custom.1.4.0.js"></script>
+	</head>
+
+	<body>
+
+		<div class="header">
+			<div class="content-wrapper">
+				<h1>
+					DIARY WALL CHART PROTO
+				</h1>	
+				<div class="controls">
+					<h2>ZOOM:</h2> 
+					<input id="zoom" type="number" value="50" onchange="zoomChanged()"/>
+				</div>
+			</div>
+		</div>
+
+		<div class="body">
+			<div class="content-wrapper">
+				<canvas id="wallchart" width="900" height="530">
+				</canvas>				
+			</div>
+		</div>
+
+		<div class="footer">
+			<div class="copyright">
+				<p id="copy"></p>
+			</div>
+		</div>
+    	
+    	<script type="text/javascript" src="../Scripts/ahc.1.0.js"></script>
+    	<script type="text/javascript" src="../Scripts/ahc.model.1.6.js"></script>
+    	<script type="text/javascript" src="../Scripts/ahc.wallchart.1.4.js"></script>
+
+		<script type="text/javascript" defer>
+
+			// DEMO FUNCTONS
+
+			var _now = new Date();
+			var start = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate(), 0, 0, 0, 0);
+			function getTime(hour, minute){
+				return new Date(_now.getFullYear(), _now.getMonth(), _now.getDate(), hour, minute, 0, 0)
+			};
+			function zoomChanged() {
+				var zoomInput = window.parseInt(document.getElementById('zoom').value);
+				wallchart.changeZoom(zoomInput);
+			};
+
+
+			// API USAGE
+
+			wallchart = new ahc.Diary('wallchart', {});
+
+            var careWorker01 = new ahc.Resource({name:'Bob Johnson'});
+            var careWorker02 = new ahc.Resource({name:'Barry Scott'});
+            var careWorker03 = new ahc.Resource({name:'Jen Law'});
+            var careWorker04 = new ahc.Resource({name:'Teddy Roosevelt'});
+            var careWorker05 = new ahc.Resource({name:'Joe Bloggs'});
+            var careWorker06 = new ahc.Resource({name:'Charlie Broker'});
+            var careWorker07 = new ahc.Resource({name:'Ben Francis'});
+            var careWorker08 = new ahc.Resource({name:'Nicola Tesla'});
+            var careWorker09 = new ahc.Resource({name:'Herry Rollins'});
+            var careWorker10 = new ahc.Resource({name:'Michael Stipe'});
+
+			wallchart.addResource(
+				careWorker01, 
+				careWorker02, 
+				careWorker03, 
+				careWorker04, 
+				careWorker05, 
+				careWorker06, 
+				careWorker07, 
+				careWorker08, 
+				careWorker09, 
+				careWorker10);
+
+	        var event01 = new ahc.Booking({start:getTime(10,0), finish:getTime(10,30)});
+	        var event02 = new ahc.Booking({start:getTime(11,0), finish:getTime(12,0)});
+	        var event10 = new ahc.Booking({start:getTime(10,0), finish:getTime(13,15)});
+	        var event20 = new ahc.Booking({start:getTime(5,0), finish:getTime(6,0)});
+	        var event30 = new ahc.Booking({start:getTime(7,30), finish:getTime(9,0)});
+	        var event40 = new ahc.Booking({start:getTime(15,0), finish:getTime(18,0)});
+	        var event50 = new ahc.Booking({start:getTime(13,0), finish:getTime(13,30)});
+	        var event51 = new ahc.Booking({start:getTime(14,0), finish:getTime(15,0)});
+	        var event60 = new ahc.Booking({start:getTime(7,0), finish:getTime(8,0)});
+	        var event70 = new ahc.Booking({start:getTime(9,30), finish:getTime(12,0)});
+	        var event80 = new ahc.Booking({start:getTime(14,0), finish:getTime(16,0)});
+	        var event101 = new ahc.Booking({start:getTime(18,0), finish:getTime(20,0)});
+	        var event102 = new ahc.Booking({start:getTime(15,0), finish:getTime(16,0)});
+	        var event103 = new ahc.Booking({start:getTime(7,0), finish:getTime(9,0)});
+
+	        careWorker01.addEvent(event01, event02);
+	        careWorker02.addEvent(event10);
+	        careWorker03.addEvent(event20);
+	        careWorker04.addEvent(event30);
+	        careWorker05.addEvent(event40);
+	        careWorker06.addEvent(event50, event51);
+	        careWorker07.addEvent(event60);
+	        careWorker08.addEvent(event70);
+	        careWorker09.addEvent(event80);
+	        careWorker10.addEvent([event101, event102, event103]);
+
+	        setTimeout(function(){
+	        	wallchart.removeResource(careWorker10);
+	        	setTimeout(function(){
+	        		wallchart.addResource(careWorker10);
+			        setTimeout(function(){
+			        	wallchart.removeResource(careWorker06);
+			        	setTimeout(function(){
+			        		wallchart.addResource(careWorker06);
+			        	}, 5000);
+			        }, 5000);
+	        	}, 5000);
+	        }, 5000);
+
+		</script>
+	</body>
+
+</html>

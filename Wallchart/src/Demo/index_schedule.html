@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta http-equiv="x-ua-compatible" content="IE=edge">
+	    <meta charset="utf-8"/>
+	    <title>SCHEDULE WALL CHART PROTO</title>
+	    <meta name="viewport" content="width=device-width"/>
+	    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+	    <link rel="stylesheet" type="text/css" href="Styles/wallchart.1.0.css"/>
+	    <script type="text/javascript" src="fabric_custom.1.4.0.js"></script>
+	</head>
+
+	<body>
+
+		<div class="header">
+			<div class="content-wrapper">
+				<h1>
+					SCHEDULE WALL CHART PROTO
+				</h1>	
+				<div class="controls">
+					<h2>ZOOM:</h2> 
+					<input id="zoom" type="number" value="32" onchange="zoomChanged()"/>
+				</div>
+			</div>
+		</div>
+
+		<div class="body">
+			<div class="content-wrapper">
+				<canvas id="wallchart" width="900" height="380">
+				</canvas>				
+			</div>
+		</div>
+
+		<div class="footer">
+			<div class="copyright">
+				<p id="copy"></p>
+			</div>
+		</div>
+    	
+    	<script type="text/javascript" src="../Scripts/ahc.1.0.js"></script>
+    	<script type="text/javascript" src="../Scripts/ahc.model.1.6.js"></script>
+    	<script type="text/javascript" src="../Scripts/ahc.wallchart.1.4.js"></script>
+
+		<script type="text/javascript" defer>
+
+
+			// DEMO FUNCTONS
+
+			var _now = new Date();
+			var start = new Date(_now.getFullYear(), _now.getMonth(), 14, 0, 0, 0, 0);
+			function getTime(date, hour, minute){
+				return new Date(_now.getFullYear(), _now.getMonth(), date, hour, minute, 0, 0)
+			};
+			function zoomChanged() {
+				var zoomInput = window.parseInt(document.getElementById('zoom').value);
+				wallchart.changeZoom(zoomInput);
+			};
+
+
+			// API USAGE
+
+			wallchart = new ahc.Schedule('wallchart', { zoom: 32 });
+
+            var careWorker = new ahc.Resource({name:'Harry Styles'});
+
+			wallchart.addResource(careWorker);
+
+	        var event01 = new ahc.Booking({start:getTime(14, 10,0), finish:getTime(14, 10,30)});
+	        var event02 = new ahc.Booking({start:getTime(14, 11,0), finish:getTime(14, 12,0)});
+	        var event10 = new ahc.Booking({start:getTime(15, 10,0), finish:getTime(15, 13,15)});
+	        var event20 = new ahc.Booking({start:getTime(15, 5,0), finish:getTime(15, 6,0)});
+	        var event30 = new ahc.Booking({start:getTime(15, 3,30), finish:getTime(15, 5,0)});
+	        var event40 = new ahc.Booking({start:getTime(16, 15,0), finish:getTime(16, 18,0)});
+	        var event50 = new ahc.Booking({start:getTime(16, 13,0), finish:getTime(16, 13,30)});
+	        var event51 = new ahc.Booking({start:getTime(17, 14,0), finish:getTime(17, 15,0)});
+	        var event60 = new ahc.Booking({start:getTime(17, 7,0), finish:getTime(17, 8,0)});
+	        var event70 = new ahc.Booking({start:getTime(17, 9,30), finish:getTime(17, 12,0)});
+	        var event80 = new ahc.Booking({start:getTime(18, 14,0), finish:getTime(18, 16,0)});
+	        var event101 = new ahc.Booking({start:getTime(18, 18,0), finish:getTime(18, 20,0)});
+	        var event102 = new ahc.Booking({start:getTime(19, 15,0), finish:getTime(19, 16,0)});
+	        var event103 = new ahc.Booking({start:getTime(20, 7,0), finish:getTime(20, 9,0)});
+
+	        careWorker.addEvent(
+	        	event01, 
+	        	event02,
+	        	event10,
+	        	event20,
+	        	event70,
+	        	event30, 
+	        	event101, 
+	        	event102, 
+	        	event103,
+	        	event40,
+	        	event50, 
+	        	event51,
+	        	event60, 
+	        	event80);
+
+		</script>
+	</body>
+
+</html>

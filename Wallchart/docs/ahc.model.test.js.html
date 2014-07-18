@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Tests/ahc.model.test.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Tests/ahc.model.test.js</h1>
+
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+//
+//
+/** @module test/ahc/model */
+//
+//
+
+console.log('module test/ahc/model: ' + new Date());
+
+describe('ahc.Eventbase', function() {
+    var test = this,
+        _myEvent = {},
+        _myData = {},
+        _now = new Date(1990, 1, 1, 1, 1, 1, 1);
+
+    beforeEach(function() {
+        _myData = {
+            start: _now,
+            finish: _now
+        };
+        _myEvent = new ahc.Eventbase(_myData);
+    });
+
+    describe('stores the ref to event data', function() {
+        it('data should contain observable start', function() {
+            expect(_myEvent.start.value.getTime()).toBe(_now.getTime());
+        });
+
+        it('data should contain observable finish', function() {
+            expect(_myEvent.finish.value.getTime()).toBe(_now.getTime());
+        });
+    });
+});
+
+describe('ahc.Booking', function() {
+    var test = this,
+        _myEvent = {},
+        _myData = {},
+        _now = new Date(1990, 1, 1, 1, 1, 1, 1);
+
+    beforeEach(function() {
+        _myData = {
+            start: _now,
+            finish: _now
+        };
+        _myEvent = new ahc.Booking(_myData);
+    });
+
+    describe('requires data to construct', function() {
+        it('should throw an exception if data is no specified', function() {
+            expect(function() {
+                new ahc.Booking()
+            }).toThrow();
+        });
+    });
+
+    describe('stores the ref to event data', function() {
+        it('data should contain observable start', function() {
+            expect(_myEvent.start.value.getTime()).toBe(_now.getTime());
+        });
+
+        it('data should contain observable finish', function() {
+            expect(_myEvent.finish.value.getTime()).toBe(_now.getTime());
+        });
+    });
+});
+
+describe('ahc.Resource', function() {
+    var test = this,
+        _myResource = {},
+        _myRData = {},
+        _myEvent = {},
+        _myEData = {},
+        _now = new Date(1990, 1, 1, 1, 1, 1, 1);
+
+    beforeEach(function() {
+        _myEData = {
+            start: _now,
+            finish: _now
+        };
+        _myEvent = new ahc.Booking(_myEData);
+
+        _myRData = {
+            name: 'JOHN'
+        };
+        _myResource = new ahc.Resource(_myRData);
+
+    });
+
+    describe('requires data to construct', function() {
+        it('should throw an exception if data is no specified', function() {
+            expect(function() {
+                new ahc.Resource()
+            }).toThrow();
+        });
+    });
+
+    describe('stores the ref to resource data', function() {
+        it('data should contain name', function() {
+            expect(_myResource.name).toBe('JOHN');
+        });
+    });
+
+    describe('is a container for events', function() {
+        describe('the add event method', function() {
+            it('should accept events', function() {
+                _myResource.addEvent(_myEvent);
+                expect(_myResource.events.length).toBe(1);
+            });
+
+            it('should accept not accept an untyped object', function() {
+                _myResource.addEvent({
+                    test: 'test'
+                });
+                expect(_myResource.events.length).toBe(0);
+            });
+        });
+
+        describe('the remove evetn method', function() {
+            it('should remove exisiting events', function() {
+                _myResource.addEvent(_myEvent);
+                expect(_myResource.events.length).toBe(1);
+                _myResource.removeEvent(_myEvent);
+                expect(_myResource.events.length).toBe(0);
+            });
+
+            it('should remove not remove events not already present', function() {
+                _myResource.addEvent(_myEvent);
+                expect(_myResource.events.length).toBe(1);
+                _myResource.removeEvent({
+                    test: 'test'
+                });
+                expect(_myResource.events.length).toBe(1);
+            });
+        });
+    });
+});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-ahc.html">ahc</a></li><li><a href="exceptions.html">ahc/exceptions</a></li><li><a href="model.html">ahc/model</a></li><li><a href="wallchart.html">ahc/wallchart</a></li><li><a href="ahc.html">test/ahc</a></li><li><a href="model_.html">test/ahc/model</a></li><li><a href="wallchart_.html">test/ahc/wallchart</a></li></ul><h3>Classes</h3><ul><li><a href="exceptions-AhcException.html">AhcException</a></li><li><a href="exceptions-ApplicationException.html">ApplicationException</a></li><li><a href="exceptions-ArgumentException.html">ArgumentException</a></li><li><a href="model-Booking.html">Booking</a></li><li><a href="model-Eventbase.html">Eventbase</a></li><li><a href="model-Resource.html">Resource</a></li><li><a href="wallchart-Wallchart.html">Wallchart</a></li><li><a href="wallchart-WcEvent.html">WcEvent</a></li><li><a href="wallchart-WcObject.html">WcObject</a></li><li><a href="wallchart-WcResource.html">WcResource</a></li><li><a href="module-ahc-Hand.html">Hand</a></li><li><a href="module-ahc-Observable.html">Observable</a></li><li><a href="module-ahc-ObservableArray.html">ObservableArray</a></li><li><a href="module-ahc-ObservableVal.html">ObservableVal</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Thu Jul 17 2014 11:16:25 GMT+0100 (GMT Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
