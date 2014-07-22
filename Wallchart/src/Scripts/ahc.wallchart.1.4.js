@@ -836,14 +836,14 @@ Diary = (function(_base) {
     Diary.prototype.setTimeOnMove = function(current) {
 
         // Convert the data using times of the left and right pos of element.
-        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
-        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
+        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
+        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
 
-        var startTimeInMills = (Math.floor(startPx) * 3600000) + (Math.round(startPx % 1 * 60) * 60000);
-        var finishTimeInMills = (Math.floor(finishPx) * 3600000) + (Math.round(finishPx % 1 * 60) * 60000);
+        var startTimeInMills = /* Hours */ (Math.floor(startPx) * 3600000) + /* Minutes */ (Math.round(startPx % 1 * 60) * 60000);
+        var finishTimeInMills = /* Hours */ (Math.floor(finishPx) * 3600000) + /* Minutes */ (Math.round(finishPx % 1 * 60) * 60000);
 
-        current.data.start.value = new Date(wc.startTime).addMilliseconds(startTimeInMills);
-        current.data.finish.value = new Date(wc.startTime).addMilliseconds(finishTimeInMills);
+        current.data.start.value = new Date(this.startTime).addMilliseconds(startTimeInMills);
+        current.data.finish.value = new Date(this.startTime).addMilliseconds(finishTimeInMills);
     }
 
     /**
@@ -954,14 +954,16 @@ Schedule = (function(_base) {
     Schedule.prototype.setTimeOnMove = function(current) {
 
         // Convert the data using times of the left and right pos of element.
-        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
-        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
+        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
+        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
 
-        var startTimeInMills = (Math.floor(startPx) * 3600000) + (Math.round(startPx % 1 * 60) * 60000);
-        var finishTimeInMills = (Math.floor(finishPx) * 3600000) + (Math.round(finishPx % 1 * 60) * 60000);
+        var dayNew = Math.round((current.getTop() - this.headerHeight) / this.height);
 
-        current.data.start.value = new Date(wc.startTime).addMilliseconds(startTimeInMills);
-        current.data.finish.value = new Date(wc.startTime).addMilliseconds(finishTimeInMills);
+        var startTimeInMills = /* Hours */ (Math.floor(startPx) * 3600000) + /* Minutes */ (Math.round(startPx % 1 * 60) * 60000);
+        var finishTimeInMills = /* Hours */ (Math.floor(finishPx) * 3600000) + /* Minutes */ (Math.round(finishPx % 1 * 60) * 60000);
+
+        current.data.start.value = new Date(this.startTime).addMilliseconds(startTimeInMills).addDays(dayNew + 1);
+        current.data.finish.value = new Date(this.startTime).addMilliseconds(finishTimeInMills).addDays(dayNew + 1);
     }
 
     /**
