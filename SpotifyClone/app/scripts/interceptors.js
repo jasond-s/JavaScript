@@ -1,6 +1,7 @@
 //
 // --------------------------------------------- HTTP SERVICE REPLACEMENT -----
 //
+
 app.factory('nsHttp', ['$http',
     function($http) {
 
@@ -38,13 +39,14 @@ app.factory('nsHttp', ['$http',
 //
 // --------------------------------------------- REQUEST INTERCEPTOR -----
 //
+
+
+// HEADERS NEEDED:
+// X-JourneyMan-Id, X-Session-Id, X-Client-Version, X-Organisation-Id and X-Time-Original-Request-Initiated
+
 app.factory('ahcDataInterceptor', function($q) {
 
     // Do some more interesting stuff here.
-
-    var getHeaderValue = function() {
-        return 'Some lazy loaded value from the interceptor';
-    };
 
     return {
         response: function(config) {
@@ -53,7 +55,7 @@ app.factory('ahcDataInterceptor', function($q) {
         request: function(config) {
             // Do some other interesting stuff here.
 
-            config.headers['X-Ns-Header'] = getHeaderValue();
+            config.headers['X-Client-Version'] = '0.0.0';
 
             return config;
         }

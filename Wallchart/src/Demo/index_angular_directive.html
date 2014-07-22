@@ -4,11 +4,13 @@
 	<head>
 		<meta http-equiv="x-ua-compatible" content="IE=edge">
 	    <meta charset="utf-8"/>
-	    <title>DIARY WALL CHART PROTO</title>
+	    <title>ANGULAR DIRECTIVE WALL CHART PROTO</title>
 	    <meta name="viewport" content="width=device-width"/>
 	    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon"/>
 	    <link rel="stylesheet" type="text/css" href="Styles/wallchart.1.0.css"/>
 	    <script type="text/javascript" src="fabric_custom.1.4.0.js"></script>
+	    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
 	</head>
 
 	<body>
@@ -16,7 +18,7 @@
 		<div class="header">
 			<div class="content-wrapper">
 				<h1>
-					DIARY WALL CHART PROTO
+					ANGULAR DIRECTIVE WALL CHART PROTO
 				</h1>	
 				<div class="controls">
 					<h2>ZOOM:</h2> 
@@ -25,10 +27,9 @@
 			</div>
 		</div>
 
-		<div class="body">
-			<div class="content-wrapper">
-				<canvas id="wallchart" width="900" height="530">
-				</canvas>				
+		<div class="body" ng-app="wallchartApp">
+			<div class="content-wrapper" ng-controller="MainCtrl">
+				<wallchart name="wallchart" type="{{ type }}" width="900" height="530" options="{{ options }}"></wallchart>				
 			</div>
 		</div>
 
@@ -37,12 +38,29 @@
 				<p id="copy"></p>
 			</div>
 		</div>
-    	
+
     	<script type="text/javascript" src="../Scripts/ahc.1.0.js"></script>
     	<script type="text/javascript" src="../Scripts/ahc.model.1.6.js"></script>
     	<script type="text/javascript" src="../Scripts/ahc.wallchart.1.4.js"></script>
 
-		<script type="text/javascript" defer>
+		<script type="text/javascript">
+			'use strict';
+
+			var app = angular.module('wallchartApp', []);
+
+			app.controller('MainCtrl', ['$scope',
+			    function($scope) {
+			    	$scope.type = ahc.wallchart.DIARY;
+			    	$scope.options = {
+
+			    	};
+			    }
+			]);
+		</script>
+    	
+    	<script type="text/javascript" src="../Scripts/ahc.wallchart.dir.0.1.js"></script>
+
+		<script type="text/javascript">
 
 			// DEMO FUNCTONS
 
@@ -59,7 +77,7 @@
 
 			// API USAGE
 
-			wallchart = new ahc.Diary('wallchart', {});
+			// wallchart = new ahc.Diary('wallchart', {});
 
             var careWorker01 = new ahc.Resource({name:'Bob Johnson'});
             var careWorker02 = new ahc.Resource({name:'Barry Scott'});
@@ -72,17 +90,17 @@
             var careWorker09 = new ahc.Resource({name:'Herry Rollins'});
             var careWorker10 = new ahc.Resource({name:'Michael Stipe'});
 
-			wallchart.addResource(
-				careWorker01, 
-				careWorker02, 
-				careWorker03, 
-				careWorker04, 
-				careWorker05, 
-				careWorker06, 
-				careWorker07, 
-				careWorker08, 
-				careWorker09, 
-				careWorker10);
+			// wallchart.addResource(
+			// 	careWorker01, 
+			// 	careWorker02, 
+			// 	careWorker03, 
+			// 	careWorker04, 
+			// 	careWorker05, 
+			// 	careWorker06, 
+			// 	careWorker07, 
+			// 	careWorker08, 
+			// 	careWorker09, 
+			// 	careWorker10);
 
 	        var event01 = new ahc.Booking({start:getTime(10,0), finish:getTime(10,30)});
 	        var event02 = new ahc.Booking({start:getTime(11,0), finish:getTime(12,0)});

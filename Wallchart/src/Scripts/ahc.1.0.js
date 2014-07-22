@@ -104,6 +104,10 @@ ahc = {};
 // date
 //
 //
+Date.prototype.addMilliseconds = function(milliseconds) {
+    this.setMilliseconds(this.getMilliseconds() + milliseconds);
+    return this;
+};
 Date.prototype.addMinutes = function(minutes) {
     this.setMinutes(this.getMinutes() + minutes);
     return this;

@@ -89,6 +89,16 @@
 }());
 
 
+
+
+//
+//
+// ahc namespace declaration
+//
+//
+
+ahc = {};
+
 //
 //
 // date
@@ -107,14 +117,36 @@ Date.prototype.addDays = function(days) {
     return this;
 };
 
+ahc.days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+Date.prototype.getDay = (function() {
+    var _orig = Date.prototype.getDay;
+    return (function(day) {
+        var _i = 0;
+        if (day) {
+            _i = ahc.days.indexOf(day.toLowerCase());
+            if (_i < 0) _i = 0;
+        }
+        // Add the offset to the amaerican days for monday as week day 0.
+        // Then minus the offset from the day passed in.
+        return (_orig.call(this) + 6 - _i) % 7;
+    });
+}());
+
+
 
 //
 //
-// ahc namespace declaration
+/** @module ahc */
 //
 //
 
-ahc = {};
+
+//
+//
+// namespace methods
+//
+//
+
 
 
 /**
@@ -154,19 +186,6 @@ var extend = function(derived, base) {
 };
 ahc.extend = extend;
 
-
-//
-//
-/** @module ahc */
-//
-//
-
-
-//
-//
-// namespace methods
-//
-//
 
 
 /**

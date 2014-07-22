@@ -2,51 +2,64 @@
 
 ahc = ahc || {};
 
-ahc.wallchart = {};
-ahc.wallchart.sectorLookup = [12, 6, 4, 2, 1, 0.5, 0.33333, 0.16667, 0.08333, 0.04167, 0.00595];
-ahc.wallchart.timeTextGenerator = [
+ahc.wallchart = {
+    sectorLookup: [12, 6, 4, 2, 1, 0.5, 0.33333, 0.16667, 0.08333, 0.04167, 0.00595],
+    timeTextGenerator: [
 
-    function(d) {
-        return d.addMinutes(5);
+        function(d) {
+            return d.addMinutes(5);
+        },
+        function(d) {
+            return d.addMinutes(10);
+        },
+        function(d) {
+            return d.addMinutes(15);
+        },
+        function(d) {
+            return d.addMinutes(30);
+        },
+        function(d) {
+            return d.addHours(1);
+        },
+        function(d) {
+            return d.addHours(2);
+        },
+        function(d) {
+            return d.addHours(3);
+        },
+        function(d) {
+            return d.addHours(6);
+        },
+        function(d) {
+            return d.addHours(12);
+        },
+        function(d) {
+            return d.addHours(24);
+        },
+        function(d) {
+            return d.addHours(168);
+        }
+    ],
+    unmovableObject: {
+        hasControls: false,
+        hasBorders: false,
+        lockMovementY: true,
+        lockMovementX: true
     },
-    function(d) {
-        return d.addMinutes(10);
-    },
-    function(d) {
-        return d.addMinutes(15);
-    },
-    function(d) {
-        return d.addMinutes(30);
-    },
-    function(d) {
-        return d.addHours(1);
-    },
-    function(d) {
-        return d.addHours(2);
-    },
-    function(d) {
-        return d.addHours(3);
-    },
-    function(d) {
-        return d.addHours(6);
-    },
-    function(d) {
-        return d.addHours(12);
-    },
-    function(d) {
-        return d.addHours(24);
-    },
-    function(d) {
-        return d.addHours(168);
-    },
-];
-ahc.wallchart.unmovableObject = {
-    hasControls: false,
-    hasBorders: false,
-    lockMovementY: true,
-    lockMovementX: true
+    MARGIN_WIDTH: 130,
+    DIARY: 0,
+    SCHEDULE: 1,
+    factory: function(type, name, options) {
+        switch (type) {
+            case this.SCHEDULE:
+                return new ahc.Schedule(name, options);
+            case this.DIARY:
+                return new ahc.Diary(name, options);
+            default:
+                throw new ahc.ex.ArgumentException('type');
+        }
+    }
 };
-ahc.wallchart.MARGIN_WIDTH = 130;
 
 
 
@@ -100,7 +113,7 @@ var WcEvent = (function(_base) {
             hasRotatingPoint: false,
             hasBorders: false,
             lockRotation: true,
-            lockMovementY: true,
+            //lockMovementY: true,
             lockScalingY: true
         });
 
@@ -370,18 +383,6 @@ var WcScheduleResource = (function(_base) {
         _base.call(this, parent, data);
 
         this.setHeight(parent.canvas.height);
-
-        this.canvas = parent.canvas;
-        this.parent = parent;
-
-        this.setFill(parent.pattern);
-
-        // The main object.
-        this.data = data;
-
-        // Might need to store the local Events for he resource.
-        this.events = new ahc.ObservableArray();
-
         this.eventsChanged();
     }
 
@@ -434,6 +435,7 @@ var Wallchart = (function() {
 
         this.currentEvent; // This is the currently selected event.
         this.selectedResource; // This is the currently focused resource.
+        var _currentClone;
 
         // Options
         this.pixelsPerHour = options.zoom = options.zoom || 50;
@@ -444,7 +446,7 @@ var Wallchart = (function() {
 
         // Internals
         this.resources = [];
-        this.canvas = new fabric.Canvas(elementName);
+        this.canvas = _canvas = new fabric.Canvas(elementName);
 
         fabric.Object.prototype.transparentCorners = true;
 
@@ -508,6 +510,8 @@ var Wallchart = (function() {
         // MAIN
         //
         this.canvas.on({
+            'mouse:down': mouseDown,
+            'mouse:up': mouseUp,
             'object:moving': onMove,
             'object:scaling': onChange,
             'object:selected': onSelect
@@ -531,21 +535,87 @@ var Wallchart = (function() {
                 }
 
             });
-            current.collisionWithEvent(_collided);
+            if (current.collisionWithEvent) current.collisionWithEvent(_collided);
+        };
+
+        /**
+         * On Canvas Object Mouse Down
+         * @param {Object} [options] The event options sent from the fabirc event handler.
+         */
+        function mouseDown(options) {
+            // Maybe nothing needed here.
+        };
+
+        /**
+         * On Canvas Object Mouse Up
+         * @param {Object} [options] The event options sent from the fabirc event handler.
+         */
+        function mouseUp(options) {
+            if (_currentClone) {
+                var _current = options.target;
+
+                // If the object intersects with old, just ignore the move?
+
+                if (_current.intersectsWithObject(_currentClone)) {
+
+                    // Remove the old placeholder.
+
+                    _current.parent.data.removeEvent(_current.data);
+                    _current.parent.data.addEvent(_current.data);
+
+                } else {
+
+                    // Find the closest resource to add to.
+
+                    var mouseY = options.e.layerY;
+
+                    var resource = wc.getResources().find(function(e, i, a) {
+                        if (mouseY > e.top && (e.top + e.getHeight()) > mouseY) {
+                            return e;
+                        }
+                        return false;
+                    });
+
+                    // Create the new booking (transfer the data). 
+                    if (resource) {
+
+                        wc.setTimeOnMove(_current);
+
+                        // Add the new event.
+                        resource.data.addEvent(_current.data);
+                    }
+                }
+
+                // Remove the ghosts.
+                _canvas.remove(_currentClone);
+                _canvas.remove(_current);
+                _currentClone = null;
+            }
+
+            _canvas.renderAll();
         };
 
         /**
          * On Canvas Object Move
-         * @param {options} The event options sent from the fabirc event handler.
-         * @return {undefined} Nothing
+         * @param {Object} [options] The event options sent from the fabirc event handler.
          */
         function onMove(options) {
             var _current = options.target;
 
-            // -> Here we need to do the snap to resource type action.
+            if (!_currentClone) {
 
-            // Update data start and finish.
-            if (_current instanceof ahc.WcEvent) {}
+                // Create placeholder for the old position.
+
+                _currentClone = _current.clone();
+
+                _canvas.add(_currentClone);
+
+                // Create the ghost (opacity of the selected object).
+
+                _current.setOpacity('0.5');
+
+                _canvas.renderAll();
+            }
 
             // Collision detection.
             collisionDetection(_current);
@@ -554,8 +624,7 @@ var Wallchart = (function() {
 
         /**
          * On Canvas Object Changed
-         * @param {options} The event options sent from the fabirc event handler.
-         * @return {undefined} Nothing
+         * @param {Object} [options] The event options sent from the fabirc event handler.
          */
         function onChange(options) {
             var _current = options.target;
@@ -563,7 +632,9 @@ var Wallchart = (function() {
             // -> Anything to do with general resizing of the event.
 
             // Update data start and finish.
-            if (_current instanceof ahc.WcEvent) {}
+            if (_current instanceof ahc.WcEvent) {
+                setTimeOnMove(_current);
+            }
 
             // Collision detection.
             collisionDetection(_current);
@@ -572,21 +643,21 @@ var Wallchart = (function() {
 
         /**
          * On Canvas Object Selected
-         * @param {options} The event options sent from the fabirc event handler.
-         * @return {undefined} Nothing
+         * @param {Object} [options] The event options sent from the fabirc event handler.
          */
         function onSelect(options) {
             var _obj = options.target;
             wc.currentEvent = null;
+
             if (_obj instanceof ahc.WcResource) {
                 wc.selectedResource = options;
                 return;
             }
             if (_obj instanceof ahc.WcEvent) {
-
                 wc.currentEvent = options;
                 return;
             }
+
             _obj.setCoords();
         };
 
@@ -613,16 +684,6 @@ var Wallchart = (function() {
                 _key = null;
             };
         }());
-
-        /**
-         * Mouse Event Binder
-         * This method is for capturing the keyboard events consumed by the browser.
-         * @param {undefined} Nothing
-         * @return {undefined} Nothing
-         */
-        (function() {
-
-        }());
     };
 
     /**
@@ -639,8 +700,8 @@ var Wallchart = (function() {
         // Scale the events.
         this.canvas.forEachObject(function(obj) {
             if (obj instanceof ahc.WcEvent) {
-                obj.setWidth(obj.width * _scale);
-                obj.setLeft(((obj.left - ahc.wallchart.MARGIN_WIDTH) * _scale) + ahc.wallchart.MARGIN_WIDTH);
+                obj.setWidth(obj.getWidth() * _scale);
+                obj.setLeft(((obj.getLeft() - ahc.wallchart.MARGIN_WIDTH) * _scale) + ahc.wallchart.MARGIN_WIDTH);
                 obj.setCoords();
             }
         });
@@ -668,10 +729,10 @@ var Wallchart = (function() {
         })
 
         // Find out the most appropriate sector type.
-        var _sectorLookupWidth = _pixelsLookup.find(function(element, index, array) {
-            if (element >= 40 && element <= 80) {
-                _sectorLookupIndex = index;
-                return element;
+        var _sectorLookupWidth = _pixelsLookup.find(function(e, i, a) {
+            if (e >= 40 && e <= 80) {
+                _sectorLookupIndex = i;
+                return e;
             }
             return false;
         });
@@ -769,6 +830,30 @@ Diary = (function(_base) {
     }
 
     /**
+     * Set the booking start times on a move.
+     * @param {Object} [options] The event options sent from the fabirc event handler.
+     */
+    Diary.prototype.setTimeOnMove = function(current) {
+
+        // Convert the data using times of the left and right pos of element.
+        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
+        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
+
+        var startTimeInMills = (Math.floor(startPx) * 3600000) + (Math.round(startPx % 1 * 60) * 60000);
+        var finishTimeInMills = (Math.floor(finishPx) * 3600000) + (Math.round(finishPx % 1 * 60) * 60000);
+
+        current.data.start.value = new Date(wc.startTime).addMilliseconds(startTimeInMills);
+        current.data.finish.value = new Date(wc.startTime).addMilliseconds(finishTimeInMills);
+    }
+
+    /**
+     * Get THe Resources As Array
+     */
+    Diary.prototype.getResources = function() {
+        return this.resources;
+    };
+
+    /**
      * Add Resource
      * @param {ahc.Resource} [resources] Add resources as single, multiple or array.
      */
@@ -861,6 +946,30 @@ Schedule = (function(_base) {
 
         this.resource = {};
     }
+
+    /**
+     * Set the booking start times on a move.
+     * @param {Object} [options] The event options sent from the fabirc event handler.
+     */
+    Schedule.prototype.setTimeOnMove = function(current) {
+
+        // Convert the data using times of the left and right pos of element.
+        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
+        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / wc.pixelsPerHour;
+
+        var startTimeInMills = (Math.floor(startPx) * 3600000) + (Math.round(startPx % 1 * 60) * 60000);
+        var finishTimeInMills = (Math.floor(finishPx) * 3600000) + (Math.round(finishPx % 1 * 60) * 60000);
+
+        current.data.start.value = new Date(wc.startTime).addMilliseconds(startTimeInMills);
+        current.data.finish.value = new Date(wc.startTime).addMilliseconds(finishTimeInMills);
+    }
+
+    /**
+     * Get The Resources As An Array.
+     */
+    Schedule.prototype.getResources = function() {
+        return [this.resource];
+    };
 
     /**
      * Get the wallchart start date.
