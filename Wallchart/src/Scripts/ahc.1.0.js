@@ -90,7 +90,6 @@
 
 
 
-
 //
 //
 // ahc namespace declaration
@@ -98,6 +97,8 @@
 //
 
 ahc = {};
+
+
 
 //
 //
@@ -168,6 +169,7 @@ var mixin = function(destination, source) {
     return destination;
 };
 ahc.mixin = mixin;
+
 
 
 /**
@@ -246,17 +248,29 @@ ahc.remove = remove;
  */
 var arrayArgument = function(argv, context, delegate) {
     if (argv === undefined) return;
+
+    // Conver the arguments into a js array.
     var args = Array.prototype.slice.call(argv);
+
     if (args.length >= 1) {
+
+        // Iterate the items.
         for (var i = args.length - 1; i >= 0; i--) {
+
             var arg = args[i];
+
+            // If the item is an array then we should iterate that one (recursion flattened to 1 level).
             if (arg instanceof Array) {
+
                 if (arg.length >= 1) {
+
                     for (var j = arg.length - 1; j >= 0; j--) {
+                        // Call the delegate.
                         delegate.call(context, arg[j])
                     }
                 }
             } else {
+                // Call the delegate
                 delegate.call(context, arg);
             }
         };
@@ -446,7 +460,7 @@ var ObservableVal = (function(_base) {
             this.internalVal = val;
             this.callHandler();
         }
-    })
+    });
 
     return ObservableVal;
 }(ahc.Observable));
@@ -491,7 +505,7 @@ var ObservableArray = (function(_base) {
         get: function() {
             return this.internalArray.length;
         }
-    })
+    });
 
     /**
      * Clears All Items From Internal Array.
@@ -559,9 +573,13 @@ ahc.ObservableArray = ObservableArray;
 //
 //
 
+
+
 /** @module ahc/exceptions */
 
 ahc.ex = {};
+
+
 
 /**
  * AhcException
@@ -578,8 +596,8 @@ var AhcException = (function() {
             return new AhcException(name);
         }
         var tmp = Error.apply(this, arguments);
-        this.stack = tmp.stack
-        this.message = tmp.message
+        this.stack = tmp.stack;
+        this.message = tmp.message;
 
         this.name = 'ahc.' + name;
     }
@@ -587,6 +605,8 @@ var AhcException = (function() {
     return AhcException;
 }());
 ahc.ex.AhcException = AhcException;
+
+
 
 /**
  * ArgumentException
@@ -609,6 +629,8 @@ var ArgumentException = (function(_base) {
     return ArgumentException;
 }(AhcException));
 ahc.ex.ArgumentException = ArgumentException;
+
+
 
 /**
  * ApplicationException

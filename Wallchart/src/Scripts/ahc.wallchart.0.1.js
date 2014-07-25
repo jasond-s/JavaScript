@@ -113,8 +113,19 @@ var WcEvent = (function(_base) {
             hasRotatingPoint: false,
             hasBorders: false,
             lockRotation: true,
-            //lockMovementY: true,
             lockScalingY: true
+        });
+
+        this.setControlsVisibility({
+            tl: false,
+            tr: false,
+            br: false,
+            bl: false,
+            ml: true,
+            mt: false,
+            mr: true,
+            mb: false,
+            mtr: false
         });
 
         this.desiredFill = fill;
@@ -448,53 +459,57 @@ var Wallchart = (function() {
         this.resources = [];
         this.canvas = _canvas = new fabric.Canvas(elementName);
 
-        fabric.Object.prototype.transparentCorners = true;
-
         //
         // TIME MARKS
         //
-        var rsrcCanvas = new fabric.StaticCanvas();
-        rsrcCanvas.add(new fabric.Line([-1, (this.height / 2), -1, -(this.height / 2)], {
+
+        // The resource texture.
+        this._rsrcCanvas = new fabric.StaticCanvas();
+        this._rsrcCanvas.add(ahc.mixin(new fabric.Line([-1, (this.height), -1, -(this.height)], {
             fill: 'darkgrey',
             stroke: 'darkgrey',
             strokeWidth: 1,
             selectable: false
-        }));
+        }), ahc.unmovableObject));
         this.pattern = new fabric.Pattern({
             source: function() {
-                rsrcCanvas.setDimensions({
+                wc._rsrcCanvas.setDimensions({
                     width: wc.padding,
                     height: wc.height
                 });
-                return rsrcCanvas.getElement();
+                return wc._rsrcCanvas.getElement();
             },
             repeat: 'repeat'
         });
 
-        var hdrCanvas = new fabric.StaticCanvas();
-        hdrCanvas.add(new fabric.Rect({
+        // The header texture.
+        this._hdrCanvas = new fabric.StaticCanvas();
+        this._hdrCanvas.add(ahc.mixin(new fabric.Rect({
             left: 1,
             width: 100,
             height: this.headerHeight - 2,
-            fill: '#12476E'
-        }));
+            fill: '#12476E',
+            selectable: false
+        }), ahc.unmovableObject));
         this.canvas.add(new fabric.Rect(ahc.mixin({
             left: 0,
             width: ahc.wallchart.MARGIN_WIDTH,
             height: this.headerHeight,
-            fill: '#0064ab'
+            fill: '#0064ab',
+            selectable: false
         }, ahc.wallchart.unmovableObject)));
         this.canvas.add(new fabric.Rect(ahc.mixin({
             left: ahc.wallchart.MARGIN_WIDTH,
             width: 900,
             height: this.headerHeight,
+            selectable: false,
             fill: new fabric.Pattern({
                 source: function() {
-                    hdrCanvas.setDimensions({
+                    wc._hdrCanvas.setDimensions({
                         width: wc.padding,
                         height: wc.headerHeight
                     });
-                    return hdrCanvas.getElement();
+                    return wc._hdrCanvas.getElement();
                 },
                 repeat: 'repeat'
             })
@@ -524,10 +539,16 @@ var Wallchart = (function() {
          * @return {undefined} Nothing
          */
         function collisionDetection(current) {
+            // Create the list of possible collsions
             var _collided = [];
+
             wc.canvas.forEachObject(function(obj) {
                 if (obj !== current && obj instanceof ahc.WcEvent && current instanceof ahc.WcEvent) {
+
+                    // Check intersection
                     if (current.intersectsWithObject(obj)) {
+
+                        // Add the new collison and sort layers.
                         _collided.push(obj);
                         current.bringToFront();
                         current.parent.sortLayers();
@@ -535,6 +556,8 @@ var Wallchart = (function() {
                 }
 
             });
+
+            // Notify events of collisions.
             if (current.collisionWithEvent) current.collisionWithEvent(_collided);
         };
 
@@ -551,48 +574,55 @@ var Wallchart = (function() {
          * @param {Object} [options] The event options sent from the fabirc event handler.
          */
         function mouseUp(options) {
-            if (_currentClone) {
-                var _current = options.target;
 
-                // If the object intersects with old, just ignore the move?
+            var _current = options.target;
 
-                if (_current.intersectsWithObject(_currentClone)) {
+            if (_current instanceof WcEvent) {
 
-                    // Remove the old placeholder.
+                _current.hasControls = true;
 
-                    _current.parent.data.removeEvent(_current.data);
-                    _current.parent.data.addEvent(_current.data);
+                if (_currentClone) {
 
-                } else {
+                    // If the object intersects with old, just ignore the move?
 
-                    // Find the closest resource to add to.
+                    if (_current.intersectsWithObject(_currentClone)) {
 
-                    var mouseY = options.e.layerY;
+                        // Remove the old placeholder.
 
-                    var resource = wc.getResources().find(function(e, i, a) {
-                        if (mouseY > e.top && (e.top + e.getHeight()) > mouseY) {
-                            return e;
+                        _current.parent.data.removeEvent(_current.data);
+                        _current.parent.data.addEvent(_current.data);
+
+                    } else {
+
+                        // Find the closest resource to add to.
+
+                        var mouseY = options.e.layerY,
+                            resource = wc.getResources().find(function(e, i, a) {
+                                if (mouseY > e.top && (e.top + e.getHeight()) > mouseY) {
+                                    return e;
+                                }
+                                return false;
+                            });
+
+                        // Create the new booking (transfer the data). 
+                        if (resource) {
+
+                            wc.setTimeOnMove(_current);
+
+                            // Add the new event.
+                            _current.parent.data.removeEvent(_current.data);
+                            resource.data.addEvent(_current.data);
                         }
-                        return false;
-                    });
-
-                    // Create the new booking (transfer the data). 
-                    if (resource) {
-
-                        wc.setTimeOnMove(_current);
-
-                        // Add the new event.
-                        resource.data.addEvent(_current.data);
                     }
+
+                    // Remove the ghosts.
+                    _canvas.remove(_currentClone);
+
+                    _canvas.renderAll();
                 }
 
-                // Remove the ghosts.
-                _canvas.remove(_currentClone);
-                _canvas.remove(_current);
                 _currentClone = null;
             }
-
-            _canvas.renderAll();
         };
 
         /**
@@ -602,24 +632,31 @@ var Wallchart = (function() {
         function onMove(options) {
             var _current = options.target;
 
-            if (!_currentClone) {
+            if (_current instanceof WcEvent) {
 
-                // Create placeholder for the old position.
+                if (!_currentClone) {
 
-                _currentClone = _current.clone();
+                    // Create placeholder for the old position.
 
-                _canvas.add(_currentClone);
+                    _currentClone = _current.clone();
 
-                // Create the ghost (opacity of the selected object).
+                    _currentClone.setOpacity('0.6');
 
-                _current.setOpacity('0.5');
+                    _current.hasControls = false;
 
-                _canvas.renderAll();
+                    _canvas.add(_currentClone);
+
+                    // Create the ghost (opacity of the selected object).
+
+                    _current.setOpacity('0.4');
+
+                    _canvas.renderAll();
+                }
+
+                // Collision detection.
+                collisionDetection(_current);
+                _current.setCoords();
             }
-
-            // Collision detection.
-            collisionDetection(_current);
-            _current.setCoords();
         };
 
         /**
@@ -633,7 +670,7 @@ var Wallchart = (function() {
 
             // Update data start and finish.
             if (_current instanceof ahc.WcEvent) {
-                setTimeOnMove(_current);
+                wc.setTimeOnMove(_current);
             }
 
             // Collision detection.
@@ -649,15 +686,19 @@ var Wallchart = (function() {
             var _obj = options.target;
             wc.currentEvent = null;
 
+            // If the selected object is resource
             if (_obj instanceof ahc.WcResource) {
                 wc.selectedResource = options;
                 return;
             }
+
+            // If the selected object is an event.
             if (_obj instanceof ahc.WcEvent) {
                 wc.currentEvent = options;
                 return;
             }
 
+            // Set coords if not redrawing.
             _obj.setCoords();
         };
 
@@ -668,16 +709,16 @@ var Wallchart = (function() {
          * @return {undefined} Nothing
          */
         (function() {
-            var _key;
+            var _key = null;
             window.onkeydown = function(e) {
                 if (e.key !== _key) {
-                    if (e.key === 'Del') wc.delete();
-                    if (_key === 'Control') {
-                        if (e.key === 'c') wc.copy();
-                        if (e.key === 'v') wc.paste();
-                        if (e.key === 'x') wc.cut();
+                    if (e.keyCode === 46) wc.delete();
+                    if (_key && _key.ctrlKey) {
+                        if (e.keyCode === 67) wc.copy();
+                        if (e.keyCode === 86) wc.paste();
+                        if (e.keyCode === 88) wc.cut();
                     }
-                    _key = e.key;
+                    _key = e;
                 }
             };
             window.onkeyup = function(e) {
@@ -928,13 +969,15 @@ Schedule = (function(_base) {
                     fill: '#FFF',
                     backgroundColor: '#0064ab',
                     fontSize: 14,
+                    selectable: false
                 }, ahc.wallchart.unmovableObject)),
                 cover = new fabric.Rect(ahc.mixin({
                     top: top,
                     width: text.getWidth() + 2,
                     height: this.height,
                     left: 0,
-                    fill: '#0064ab'
+                    fill: '#0064ab',
+                    selectable: false
                 }, ahc.wallchart.unmovableObject));
 
             text.setTop(top + (this.height * 0.5) - (text.getHeight() * 0.5) - 2);
@@ -962,8 +1005,8 @@ Schedule = (function(_base) {
         var startTimeInMills = /* Hours */ (Math.floor(startPx) * 3600000) + /* Minutes */ (Math.round(startPx % 1 * 60) * 60000);
         var finishTimeInMills = /* Hours */ (Math.floor(finishPx) * 3600000) + /* Minutes */ (Math.round(finishPx % 1 * 60) * 60000);
 
-        current.data.start.value = new Date(this.startTime).addMilliseconds(startTimeInMills).addDays(dayNew + 1);
-        current.data.finish.value = new Date(this.startTime).addMilliseconds(finishTimeInMills).addDays(dayNew + 1);
+        current.data.start.value = new Date(this.startTime).addMilliseconds(startTimeInMills).addDays(dayNew - 1);
+        current.data.finish.value = new Date(this.startTime).addMilliseconds(finishTimeInMills).addDays(dayNew - 1);
     }
 
     /**
