@@ -3,9 +3,13 @@ JavaScript
 
 Random odds and end of ECMAScript of ACNEScript as I like to call it... LOL. I never call it that.
 
+Wallchart
+-------------
+
+A cool scheduling control built in HTML5 canvas with fabricjs... will write blog post soon.
 
 
-Glbals
+Globals
 -------------
 
 This is a bucket for all the little global modules for doing little general tasks... obviously all in individual scripts to make sure any app using them magically turns your browser into a fatty running up an incline. Use responsibly. Concatinate and minimise.
