@@ -195,6 +195,57 @@ ahc.extend = extend;
 
 
 /**
+ * Get Css Properties As JSON From Element.
+ * @param {DOMElement} [element] The element to read for CSS values.
+ */
+var getCss = function(element, property) {
+    return element ? element.currentStyle || document.defaultView.getComputedStyle(element, null) : {};
+};
+ahc.getCss = getCss;
+
+
+
+/**
+ * Convert an RGB color format to a hex value.
+ * @param {String} [color] A colour in rgb({r}, {g}, {b}) format.
+ */
+var colors = {};
+var colourToHex = function(color) {
+    if (color.substr(0, 1) === '#') {
+        return color;
+    }
+    if (colors[color]) {
+        return colors[color];
+    }
+    var digits = /(.*?)rgb\((\d+), (\d+), (\d+)\)/.exec(color),
+        r = parseInt(digits[2]),
+        g = parseInt(digits[3]),
+        b = parseInt(digits[4]);
+
+    colors[color] = digits[1] + '#' + ahc.padLeft(2, r.toString(16), '0') + ahc.padLeft(2, g.toString(16), '0') + ahc.padLeft(2, b.toString(16), '0');
+
+    return colors[color];
+};
+ahc.colourToHex = colourToHex;
+
+
+
+/**
+ * Get a color from the CSS properties of an element
+ * @param {DOMElement} [element] The element to read for CSS values.
+ * @param {String} [property] The name of the property you are lookign for.
+ * @param {String} [default] The default value for the property.
+ */
+var getCssColour = function(element, property, def) {
+    var background = element[property];
+    if (background === 'transparent' || background === 'rgba(0, 0, 0, 0)') background = def;
+    return ahc.colourToHex(background || def);
+};
+ahc.getCssColour = getCssColour;
+
+
+
+/**
  * Add
  * Adds the item to the array if it is not already present.
  * @param {Array} [array] The array you want to add the item to.
@@ -212,7 +263,7 @@ var add = function(array, item) {
     }
 
     array.push(item);
-}
+};
 ahc.add = add;
 
 
@@ -233,7 +284,7 @@ var remove = function(array, item) {
     if (index > -1) {
         array.splice(index, 1);
     }
-}
+};
 ahc.remove = remove;
 
 
@@ -306,6 +357,18 @@ function padLeft(width, str, padding) {
 }
 ahc.padLeft = padLeft;
 
+
+
+/**
+ * Convert the string to title case.
+ * @param {String} [str] The input sting.
+ */
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
+ahc.toTitleCase = toTitleCase;
 
 
 /**

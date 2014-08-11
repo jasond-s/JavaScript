@@ -9,6 +9,27 @@
 	    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon"/>
 	    <link rel="stylesheet" type="text/css" href="Styles/wallchart.1.0.css"/>
 	    <script type="text/javascript" src="fabric.min.js"></script>
+	    <style type="text/css">			 
+			#wallchart {
+				background: #fff;
+				/*border: solid 1px #12476E;*/
+			}
+			 
+			#wallchartResource {
+				background-color: #0064AB;
+				border-color: #FFF;
+			}
+			 
+			#wallchartHeader {
+				background-color: #E4E4E4;
+				border-color: #FFF;
+			}
+			 
+			#wallchartEvent {
+				background-color: #00FF00;
+				border-color: #00FF00;
+			}
+	    </style>
 	</head>
 
 	<body>
@@ -27,8 +48,11 @@
 
 		<div class="body">
 			<div class="content-wrapper">
+				<div id="wallchartResource"></div>
+				<div id="wallchartHeader"></div>
+				<div id="wallchartEvent"></div>
 				<canvas id="wallchart" width="900" height="530">
-				</canvas>				
+				</canvas>	
 			</div>
 		</div>
 
@@ -39,15 +63,14 @@
 		</div>
     	
     	<script type="text/javascript" src="../Scripts/ahc.1.0.js"></script>
-    	<script type="text/javascript" src="../Scripts/ahc.model.1.6.js"></script>
-    	<script type="text/javascript" src="../Scripts/ahc.wallchart.1.4.js"></script>
+    	<script type="text/javascript" src="../Scripts/ahc.model.0.1.js"></script>
+    	<script type="text/javascript" src="../Scripts/ahc.wallchart.0.1.js"></script>
 
 		<script type="text/javascript" defer>
 
 			// DEMO FUNCTONS
 
 			var _now = new Date();
-			var start = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate(), 0, 0, 0, 0);
 			function getTime(hour, minute){
 				return new Date(_now.getFullYear(), _now.getMonth(), _now.getDate(), hour, minute, 0, 0)
 			};

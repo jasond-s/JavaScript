@@ -3,6 +3,8 @@
 // Coallease the namespace.
 ahc = ahc || {};
 
+
+
 /**
  * Eventbase : Abstract
  * @constructor
@@ -43,7 +45,9 @@ var Booking = (function(_base) {
         if (!(this instanceof Booking)) {
             return new Booking(data);
         }
-        _base.call(this, data)
+        _base.call(this, data);
+
+        this.travelTime = this.data.travelTime || 0;
     }
 
     return Booking;

@@ -97,23 +97,30 @@ ahc.WcObject = WcObject;
  * @param {Object} [data] The Event data.
  * @param {Number} [width] The relative width of the Event.
  * @param {Date} [start] The start position.
- * @param {Object} [fill] Colour fill.
+ * @param {Object} [parent] Event Parent.
  */
 var WcEvent = (function(_base) {
     'use strict';
     ahc.extend(WcEvent, _base);
     ahc.mixin(WcEvent.prototype, WcObject.prototype);
 
-    function WcEvent(data, width, height, start, fill) {
+    function WcEvent(data, width, height, start, parent) {
         if (!(this instanceof WcEvent)) {
-            return new WcEvent(data, width, height, start, fill);
+            return new WcEvent(data, width, height, start, parent);
         }
+
+        // This could be contained in the wallchart parent at config time.
+        var backGroundColor = ahc.getCssColour(parent.parent.style.event, 'backgroundColor', '#0064AB'),
+            borderColor = ahc.getCssColour(parent.parent.style.event, 'borderTopColor', '#00487A');
+
         _base.call(this, {
-            height: height - 4,
+            height: height - 2,
             hasRotatingPoint: false,
             hasBorders: false,
             lockRotation: true,
-            lockScalingY: true
+            lockScalingY: true,
+            strokeWidth: 1,
+            stroke: borderColor
         });
 
         this.setControlsVisibility({
@@ -128,16 +135,18 @@ var WcEvent = (function(_base) {
             mtr: false
         });
 
-        this.desiredFill = fill;
+        this.data = data;
+        this.parent = parent;
+
+        this.desiredFill = backGroundColor;
         this.currentCollsions = [];
 
-        this.data = data;
-        this.parent = null;
-
         // Set the fill, this could be a pattern.
-        this.setFill(fill);
+        this.setFill(this.desiredFill);
+
         // Some calculation needs to be done for the start.
         this.setLeft(start);
+
         // The width should be dependant on the scale factor for the current zoom level.
         this.setWidth(width);
     }
@@ -159,12 +168,22 @@ var WcEvent = (function(_base) {
             this.fill = 'rgba(255,0,0,0.5)';
 
             // Handle any extra logic for the collision.
+
+            // Call any handlers.
+
         } else {
             // No Collisions Handle.
             this.fill = this.desiredFill;
 
             // Handle any extra logic for not having any collisions.
+
+            // Call any handlers.
         }
+
+        // Notify the data of collisions
+        if (this.data.colliedWith) this.data.colliedWith(this.currentCollisions.map(function(o) {
+            return o.data;
+        }));
     }
 
     return WcEvent;
@@ -197,7 +216,7 @@ var WcResource = (function(_base) {
         this.canvas = parent.canvas;
         this.parent = parent;
 
-        this.setTop(0);
+        this.setTop(0 + parent.headerHeight);
         this.setFill(parent.pattern);
 
         // The main object.
@@ -214,8 +233,7 @@ var WcResource = (function(_base) {
      */
     WcResource.prototype.addEvent = function() {
         ahc.arrayArgument(arguments, this, function(obj) {
-            obj.top = this.getTop(obj);
-            obj.parent = this;
+            obj.top = this.getTop(obj) + 1;
             this.events.push(obj);
             this.canvas.add(obj);
         });
@@ -247,7 +265,7 @@ var WcResource = (function(_base) {
         for (var i = 0; i < _newEvents.length; i++) {
             var _start = ahc.parseTimeToDecimal(_newEvents[i].start.value);
             var _finish = ahc.parseTimeToDecimal(_newEvents[i].finish.value);
-            var wcEvent = new ahc.WcEvent(_newEvents[i], (_finish - _start) * _padding + 1, this.parent.height, ahc.wallchart.MARGIN_WIDTH + (_start * _padding), '#0064ab');
+            var wcEvent = new ahc.WcEvent(_newEvents[i], (_finish - _start) * _padding + 1, this.parent.height, ahc.wallchart.MARGIN_WIDTH + (_start * _padding), this);
             this.events.add(wcEvent);
         };
 
@@ -266,7 +284,7 @@ var WcResource = (function(_base) {
 
     /**
      * Get Top
-     * Gets the vertical position of the resource.
+     * Gets the vertical position of events in the resource.
      */
     WcResource.prototype.getTop = function() {
         return this.top;
@@ -306,22 +324,24 @@ var WcDiaryResource = (function(_base) {
         this.setHeight(parent.height);
 
         this.text = new fabric.Text(ahc.padRight(16, data.name, ' '), ahc.mixin({
-            fontFamily: 'consolas',
-            left: 0,
+            fontFamily: 'Arial',
+            left: 10,
             fill: '#FFF',
-            backgroundColor: '#0064ab',
+            backgroundColor: 'transparent',
             fontSize: 14,
         }, ahc.wallchart.unmovableObject));
 
         this.cover = new fabric.Rect(ahc.mixin({
             top: top,
-            width: this.text.getWidth() + 2,
+            width: ahc.wallchart.MARGIN_WIDTH,
             height: parent.height,
             left: 0,
-            fill: '#0064ab'
+            fill: ahc.getCssColour(parent.style.resource, 'backgroundColor', '#0064AB'),
+            stroke: ahc.getCssColour(parent.style.resource, 'borderTopColor', '#FFF'),
+            strokeWidth: 1
         }, ahc.wallchart.unmovableObject));
 
-        this.text.setTop(top + (parent.height * 0.5) - (this.text.getHeight() * 0.5) - 2);
+        this.text.setTop( /* Resource Top */ top + /* Resource Height */ (this.parent.height * 0.5) - /* Inner Text */ (this.text.getHeight() * 0.5) - /* Offset */ 2);
 
         this.setTop(top);
 
@@ -409,7 +429,7 @@ var WcScheduleResource = (function(_base) {
     };
 
     /**
-     * Override - Gets the top position of the resource.
+     * Override - Gets the top position of the resource events.
      */
     WcScheduleResource.prototype.getTop = function(obj) {
         return (obj.data.start.value.getDay(this.parent.startDay) * this.parent.height) + this.parent.headerHeight;
@@ -432,7 +452,7 @@ var Wallchart = (function() {
 
     function start() {
         var _now = new Date();
-        return new Date(_now.getYear(), _now.getMonth(), _now.getDate(), 0, 0, 0, 0);
+        return new Date(_now.getFullYear(), _now.getMonth(), _now.getDate(), 0, 0, 0, 0);
     }
 
     function Wallchart(elementName, options) {
@@ -442,33 +462,52 @@ var Wallchart = (function() {
 
         wc = this;
 
-        if (!options) options = {};
+        this.name = elementName;
 
-        this.currentEvent; // This is the currently selected event.
-        this.selectedResource; // This is the currently focused resource.
-        var _currentClone;
 
         // Options
+        if (!options) options = {};
         this.pixelsPerHour = options.zoom = options.zoom || 50;
         this.padding = options.zoom = options.zoom || 50;
         this.height = options.lineHeight = options.lineHeight || 50;
         this.headerHeight = options.headerHeight = options.headerHeight || 30;
         this.startTime = options.start = options.start || start();
 
+
         // Internals
+        var _currentClone;
+        this.currentEvent; // This is the currently selected event.
+        this.selectedResource; // This is the currently focused resource.
         this.resources = [];
-        this.canvas = _canvas = new fabric.Canvas(elementName);
+        this.canvas = _canvas = new fabric.Canvas(this.name);
+
+        this.style = {};
+        this.style.header = this.getHeaderStyle();
+        this.style.resource = this.getResourceStyle();
+        this.style.event = this.getEventStyle();
+
 
         //
         // TIME MARKS
         //
 
+        var resourceBackground = ahc.getCssColour(this.style.resource, 'backgroundColor', '#0064AB');
+        var headerBackground = ahc.getCssColour(this.style.header, 'backgroundColor', '#0064AB');
+
         // The resource texture.
         this._rsrcCanvas = new fabric.StaticCanvas();
         this._rsrcCanvas.add(ahc.mixin(new fabric.Line([-1, (this.height), -1, -(this.height)], {
-            fill: 'darkgrey',
-            stroke: 'darkgrey',
+            fill: resourceBackground,
+            stroke: resourceBackground,
             strokeWidth: 1,
+            hasControls: false,
+            selectable: false
+        }), ahc.unmovableObject));
+        this._rsrcCanvas.add(ahc.mixin(new fabric.Line([100, -1, -0, -1], {
+            fill: resourceBackground,
+            stroke: resourceBackground,
+            strokeWidth: 1,
+            hasControls: false,
             selectable: false
         }), ahc.unmovableObject));
         this.pattern = new fabric.Pattern({
@@ -482,37 +521,21 @@ var Wallchart = (function() {
             repeat: 'repeat'
         });
 
-        // The header texture.
-        this._hdrCanvas = new fabric.StaticCanvas();
-        this._hdrCanvas.add(ahc.mixin(new fabric.Rect({
-            left: 1,
-            width: 100,
-            height: this.headerHeight - 2,
-            fill: '#12476E',
-            selectable: false
-        }), ahc.unmovableObject));
+        // The top left corner.
         this.canvas.add(new fabric.Rect(ahc.mixin({
             left: 0,
             width: ahc.wallchart.MARGIN_WIDTH,
             height: this.headerHeight,
-            fill: '#0064ab',
+            fill: headerBackground,
             selectable: false
         }, ahc.wallchart.unmovableObject)));
-        this.canvas.add(new fabric.Rect(ahc.mixin({
-            left: ahc.wallchart.MARGIN_WIDTH,
-            width: 900,
-            height: this.headerHeight,
-            selectable: false,
-            fill: new fabric.Pattern({
-                source: function() {
-                    wc._hdrCanvas.setDimensions({
-                        width: wc.padding,
-                        height: wc.headerHeight
-                    });
-                    return wc._hdrCanvas.getElement();
-                },
-                repeat: 'repeat'
-            })
+        this.canvas.add(new fabric.Text('Day/Time', ahc.mixin({
+            fontFamily: 'Arial',
+            left: 10,
+            top: (this.headerHeight * 0.2),
+            fill: '#000',
+            backgroundColor: 'transparent',
+            fontSize: 12,
         }, ahc.wallchart.unmovableObject)));
 
         // The time marks collection.
@@ -574,28 +597,36 @@ var Wallchart = (function() {
          * @param {Object} [options] The event options sent from the fabirc event handler.
          */
         function mouseUp(options) {
-
             var _current = options.target;
 
             if (_current instanceof WcEvent) {
 
                 _current.hasControls = true;
 
-                if (_currentClone) {
+                // If the object intersects with old, just ignore the move?
+                var _left = _current.getLeft();
 
-                    // If the object intersects with old, just ignore the move?
+                if ((_currentClone && _current.intersectsWithObject(_currentClone)) ||  // Intersects with itself.
+                    (_left < ahc.wallchart.MARGIN_WIDTH) ||                             // Intersects with the resource headers.
+                    (_left + _current.getWidth() > wc.canvas.width) ||                  // Intersects with the edge.
+                    (_current.getTop() < wc.headerHeight)) {                            // Intersects with the header.
 
-                    if (_current.intersectsWithObject(_currentClone)) {
+                    // Cancel the action.
 
-                        // Remove the old placeholder.
+                    // Add the event back in to the resource as it knows how to handle this best.
 
-                        _current.parent.data.removeEvent(_current.data);
-                        _current.parent.data.addEvent(_current.data);
+                    _current.parent.data.removeEvent(_current.data);
+                    _current.parent.data.addEvent(_current.data);
 
-                    } else {
+                } else {
+
+                    // If the mouse up is not from a select action.
+
+                    if (!wc.select) {
+
+                        // Complete the move.
 
                         // Find the closest resource to add to.
-
                         var mouseY = options.e.layerY,
                             resource = wc.getResources().find(function(e, i, a) {
                                 if (mouseY > e.top && (e.top + e.getHeight()) > mouseY) {
@@ -605,6 +636,7 @@ var Wallchart = (function() {
                             });
 
                         // Create the new booking (transfer the data). 
+
                         if (resource) {
 
                             wc.setTimeOnMove(_current);
@@ -614,14 +646,16 @@ var Wallchart = (function() {
                             resource.data.addEvent(_current.data);
                         }
                     }
-
-                    // Remove the ghosts.
-                    _canvas.remove(_currentClone);
-
-                    _canvas.renderAll();
                 }
 
+                // Remove the ghosts.
+                _canvas.remove(_currentClone);
+
+                _canvas.renderAll();
+
                 _currentClone = null;
+
+                wc.select = false;
             }
         };
 
@@ -631,6 +665,10 @@ var Wallchart = (function() {
          */
         function onMove(options) {
             var _current = options.target;
+
+            wc.select = false;
+
+            _current.setCoords();
 
             if (_current instanceof WcEvent) {
 
@@ -655,7 +693,6 @@ var Wallchart = (function() {
 
                 // Collision detection.
                 collisionDetection(_current);
-                _current.setCoords();
             }
         };
 
@@ -667,15 +704,10 @@ var Wallchart = (function() {
             var _current = options.target;
 
             // -> Anything to do with general resizing of the event.
-
-            // Update data start and finish.
-            if (_current instanceof ahc.WcEvent) {
-                wc.setTimeOnMove(_current);
-            }
+            _current.setCoords();
 
             // Collision detection.
             collisionDetection(_current);
-            _current.setCoords();
         };
 
         /**
@@ -689,12 +721,14 @@ var Wallchart = (function() {
             // If the selected object is resource
             if (_obj instanceof ahc.WcResource) {
                 wc.selectedResource = options;
+                wc.select = true;
                 return;
             }
 
             // If the selected object is an event.
             if (_obj instanceof ahc.WcEvent) {
                 wc.currentEvent = options;
+                wc.select = true;
                 return;
             }
 
@@ -727,6 +761,20 @@ var Wallchart = (function() {
         }());
     };
 
+
+    Wallchart.prototype.getHeaderStyle = function() {
+        return document ? ahc.getCss(document.getElementById(this.name + 'Header')) : {};
+    };
+
+    Wallchart.prototype.getResourceStyle = function() {
+        return document ? ahc.getCss(document.getElementById(this.name + 'Resource')) : {};
+    };
+
+    Wallchart.prototype.getEventStyle = function() {
+        return document ? ahc.getCss(document.getElementById(this.name + 'Event')) : {};
+    };
+
+
     /**
      * Change the Zoom Level
      * @param {Number} [pxPerHr] The number of pixels per hour of time.
@@ -741,8 +789,8 @@ var Wallchart = (function() {
         // Scale the events.
         this.canvas.forEachObject(function(obj) {
             if (obj instanceof ahc.WcEvent) {
-                obj.setWidth(obj.getWidth() * _scale);
-                obj.setLeft(((obj.getLeft() - ahc.wallchart.MARGIN_WIDTH) * _scale) + ahc.wallchart.MARGIN_WIDTH);
+                obj.setWidth(obj.width * _scale);
+                obj.setLeft(((obj.left - ahc.wallchart.MARGIN_WIDTH) * _scale) + ahc.wallchart.MARGIN_WIDTH);
                 obj.setCoords();
             }
         });
@@ -788,25 +836,46 @@ var Wallchart = (function() {
 
         if (this.timeMarks.length < 1) {
             // // If it is the first run..
+            var _flip = false;
             for (var i = 0; i < 30; i++) {
                 var _timeMark = new fabric.Text(ahc.parseTimeToString(_last), ahc.mixin({
-                    fontFamily: 'consolas',
-                    left: ahc.wallchart.MARGIN_WIDTH + _lpos + 2,
-                    top: (this.headerHeight * 0.2),
-                    fill: '#FFF',
-                    backgroundColor: '#12476E',
-                    fontSize: 12,
-                }, ahc.wallchart.unmovableObject));
+                        fontFamily: 'Arial',
+                        left: ahc.wallchart.MARGIN_WIDTH + _lpos + 2,
+                        top: (this.headerHeight * 0.2),
+                        fill: '#000',
+                        backgroundColor: 'transparent',
+                        fontSize: 12,
+                    }, ahc.wallchart.unmovableObject)),
+                    _cover = new fabric.Rect(ahc.mixin({
+                        selectable: false,
+                        hasControls: false,
+                        top: 0,
+                        width: this.padding,
+                        height: this.headerHeight - 1,
+                        left: ahc.wallchart.MARGIN_WIDTH + _lpos,
+                        fill: ahc.getCssColour(this.style.header, 'backgroundColor', '#0064AB'),
+                        stroke: ahc.getCssColour(this.style.header, 'borderTopColor', '#FFFFFF'),
+                        strokeWidth: 1,
+                        opacity: _flip ? 1 : 0.5
+                    }, ahc.wallchart.unmovableObject));
+
+                this.canvas.add(_cover);
                 this.canvas.add(_timeMark);
-                this.timeMarks.push(_timeMark);
+                this.timeMarks.push({
+                    time: _timeMark,
+                    cover: _cover
+                });
                 _last = gen(_last);
                 _lpos = _lpos + _sectorLookupWidth;
+                _flip = !_flip;
             };
         } else {
             // Move the old ones.
             for (var j = 0; j < this.timeMarks.length; j++) {
-                this.timeMarks[j].setText(ahc.parseTimeToString(_last));
-                this.timeMarks[j].setLeft(ahc.wallchart.MARGIN_WIDTH + _lpos + 2);
+                this.timeMarks[j].time.setText(ahc.parseTimeToString(_last));
+                this.timeMarks[j].time.setLeft(ahc.wallchart.MARGIN_WIDTH + _lpos + 2);
+                this.timeMarks[j].cover.setWidth(this.padding);
+                this.timeMarks[j].cover.setLeft(ahc.wallchart.MARGIN_WIDTH + _lpos);
                 _last = gen(_last);
                 _lpos = _lpos + _sectorLookupWidth;
             }
@@ -877,11 +946,10 @@ Diary = (function(_base) {
     Diary.prototype.setTimeOnMove = function(current) {
 
         // Convert the data using times of the left and right pos of element.
-        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
-        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
-
-        var startTimeInMills = /* Hours */ (Math.floor(startPx) * 3600000) + /* Minutes */ (Math.round(startPx % 1 * 60) * 60000);
-        var finishTimeInMills = /* Hours */ (Math.floor(finishPx) * 3600000) + /* Minutes */ (Math.round(finishPx % 1 * 60) * 60000);
+        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour,
+            finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour,
+            startTimeInMills = /* Hours */ (Math.floor(startPx) * 3600000) + /* Minutes */ (Math.round(startPx % 1 * 60) * 60000),
+            finishTimeInMills = /* Hours */ (Math.floor(finishPx) * 3600000) + /* Minutes */ (Math.round(finishPx % 1 * 60) * 60000);
 
         current.data.start.value = new Date(this.startTime).addMilliseconds(startTimeInMills);
         current.data.finish.value = new Date(this.startTime).addMilliseconds(finishTimeInMills);
@@ -947,6 +1015,15 @@ Schedule = (function(_base) {
     'use strict';
     ahc.extend(Schedule, _base);
 
+    var weekStartTime = function(startDate, startDay) {
+        var _d = startDate,
+            _day = _d.getDay(startDay),
+            _diff = _d.getDate() - _day,
+            _res = new Date(_d.setDate(_diff));
+
+        return new Date(_res.getFullYear(), _res.getMonth(), _res.getDate(), 0, 0, 0, 0);
+    };
+
     function Schedule(elementName, options) {
         if (!(this instanceof Schedule)) {
             return new Schedule(elementName, options);
@@ -954,30 +1031,34 @@ Schedule = (function(_base) {
 
         // Set the start day for the schedule, before the base sets time marks.
         this.startDay = options.startDay = options.startDay || 'monday';
+        options.start = weekStartTime(options.startTime || new Date(), this.startDay);
 
         // Apply the base to the new object.
         _base.call(this, elementName, options);
 
-        // Find the real start day.
-        var _j = ahc.days.indexOf(this.startDay);
+        var dayBackground = ahc.getCssColour(this.style.resource, 'backgroundColor', '#0064AB'),
+            // Find the real start day.
+            _j = ahc.days.indexOf(this.startDay);
 
         for (var i = 0; i < ahc.days.length; i++) {
             var top = (i * this.height) + this.headerHeight,
-                text = new fabric.Text(ahc.padRight(16, ahc.days[((_j + i) % ahc.days.length)], ' '), ahc.mixin({
-                    fontFamily: 'consolas',
-                    left: 0,
+                text = new fabric.Text(ahc.toTitleCase(ahc.padRight(16, ahc.days[((_j + i) % ahc.days.length)], ' ')), ahc.mixin({
+                    fontFamily: 'Arial',
+                    left: 10,
                     fill: '#FFF',
-                    backgroundColor: '#0064ab',
+                    backgroundColor: 'transparent',
                     fontSize: 14,
                     selectable: false
                 }, ahc.wallchart.unmovableObject)),
                 cover = new fabric.Rect(ahc.mixin({
                     top: top,
-                    width: text.getWidth() + 2,
+                    width: ahc.wallchart.MARGIN_WIDTH,
                     height: this.height,
                     left: 0,
-                    fill: '#0064ab',
-                    selectable: false
+                    fill: dayBackground,
+                    selectable: false,
+                    stroke: ahc.getCssColour(this.style.resource, 'borderColor', '#FFF'),
+                    strokeWidth: 1,
                 }, ahc.wallchart.unmovableObject));
 
             text.setTop(top + (this.height * 0.5) - (text.getHeight() * 0.5) - 2);
@@ -997,16 +1078,14 @@ Schedule = (function(_base) {
     Schedule.prototype.setTimeOnMove = function(current) {
 
         // Convert the data using times of the left and right pos of element.
-        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
-        var finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour;
+        var startPx = (current.getLeft() - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour,
+            finishPx = ((current.getLeft() + current.getWidth()) - ahc.wallchart.MARGIN_WIDTH) / this.pixelsPerHour,
+            dayNew = Math.round((current.top - this.headerHeight) / this.height),
+            startTimeInMills = /* Hours */ (Math.floor(startPx) * 3600000) + /* Minutes */ (Math.round(startPx % 1 * 60) * 60000),
+            finishTimeInMills = /* Hours */ (Math.floor(finishPx) * 3600000) + /* Minutes */ (Math.round(finishPx % 1 * 60) * 60000);
 
-        var dayNew = Math.round((current.getTop() - this.headerHeight) / this.height);
-
-        var startTimeInMills = /* Hours */ (Math.floor(startPx) * 3600000) + /* Minutes */ (Math.round(startPx % 1 * 60) * 60000);
-        var finishTimeInMills = /* Hours */ (Math.floor(finishPx) * 3600000) + /* Minutes */ (Math.round(finishPx % 1 * 60) * 60000);
-
-        current.data.start.value = new Date(this.startTime).addMilliseconds(startTimeInMills).addDays(dayNew - 1);
-        current.data.finish.value = new Date(this.startTime).addMilliseconds(finishTimeInMills).addDays(dayNew - 1);
+        current.data.start.value = new Date(this.startTime).addMilliseconds(startTimeInMills).addDays(dayNew);
+        current.data.finish.value = new Date(this.startTime).addMilliseconds(finishTimeInMills).addDays(dayNew);
     }
 
     /**
@@ -1014,17 +1093,6 @@ Schedule = (function(_base) {
      */
     Schedule.prototype.getResources = function() {
         return [this.resource];
-    };
-
-    /**
-     * Get the wallchart start date.
-     */
-    Schedule.prototype.startTime = function() {
-        var _d = new Date(),
-            _day = _d.getDay(this.startDay),
-            _diff = _d.getDate() - _day,
-            _res = new Date(_d.setDate(_diff));
-        return new Date(_res.getYear(), _res.getMonth(), _res.getDate(), 0, 0, 0, 0);
     };
 
     /**
@@ -1039,7 +1107,6 @@ Schedule = (function(_base) {
         var _resource = new ahc.WcScheduleResource(this, resource);
         resource.events.addHandler(new ahc.Hand(_resource, _resource.eventsChanged));
         this.resource = _resource;
-
         this.canvas.forEachObject(function(obj) {
             obj.setCoords();
         });
@@ -1051,7 +1118,6 @@ Schedule = (function(_base) {
      */
     Schedule.prototype.removeResource = function() {
         this.resource.remove();
-
         this.canvas.forEachObject(function(obj) {
             obj.setCoords();
         });
