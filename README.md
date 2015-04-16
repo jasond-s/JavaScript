@@ -35,3 +35,10 @@ SpotifyClone
 ----------------
 
 Some pretty SPA scaffold, typescript, angular, bower, travis, grunt, jasmine, karma... the usual offenders. But a brave new world for a dev that has spend a few years pushing his way up the OSI stack.
+
+
+
+
+1. \+
+2. \|
+3. \()
